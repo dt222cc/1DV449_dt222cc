@@ -1,2 +1,1 @@
-# 1dv449-dt222cc
-Webbteknik II
+## Repository for Course [1DV449 Webbteknik II](https://coursepress.lnu.se/kurs/webbteknik-ii/)
