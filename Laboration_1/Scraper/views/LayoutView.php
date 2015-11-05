@@ -10,7 +10,7 @@ class LayoutView
 	/**
 	 * Render the Layout
 	 */
-	public function render(ScrapeView $scrapeView)
+	public function render(ScraperView $scraperView)
 	{
 		echo "<!DOCTYPE html>
 			<html>
@@ -20,7 +20,7 @@ class LayoutView
     			</head>
     			<body>
     				<div class='container'>
-    				    " . $scrapeView->getScrapeForm() . "
+    				    " . $scraperView->getScraperForm() . "
     				</div>
 				</body>
 			</html>
