@@ -35,30 +35,41 @@ class ScraperController
             }
             //3. Do some scraping
             else {
-                //1. Calendar Scrape
-                echo "<p>Scrape: $urls[0] </p>";
-                $this->doCalendarScrape($urls[0]);
+                try {
+                    //1. Calendar Scrape
+                    echo "<p>Scrape: $urls[0] </p>";
+                    $this->doCalendarScrape($urls[0]);
 
-                //2. Theater Scrape
-//                echo "Scrape: " . $urls[1] . "<br>";
+                    //2. Theater Scrape
+                    //echo "Scrape: " . $urls[1] . "<br>";
 
-                //3. Restaurant Scrape
-//                echo "Scrape: " . $urls[2] . "<br>";
+                    //3. Restaurant Scrape
+                    //echo "Scrape: " . $urls[2] . "<br>";
+                }
+                catch (Exception $e) {
+                    $this->view->setUnexpectedErrorOccurred();
+                }
             }
         }
     }
 
+    /**
+     * @param string
+     * @return bool
+     * @throws Exception
+     */
     private function doCalendarScrape($url)
     {
         $calendarOwnerURLs = $this->model->getURLs($url);
 
         $availableDays = $this->model->getAvailableDays($calendarOwnerURLs);
 
-        //Tests
-        if ($availableDays) {
-            echo "<p>Ok</p>";
-        } else {
-            echo "<p>Fail</p>";
+        if ($availableDays == null) {
+            throw new Exception();
         }
+
+        var_dump($availableDays);
+        //Need to figure out how to keep days that match
+        //Cannot find anything on intersect with arrays inside an array
     }
 }

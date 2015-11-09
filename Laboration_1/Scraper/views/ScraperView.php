@@ -11,11 +11,16 @@ class ScraperView
 
     /** For error message */
     private $urlFailed = false;
+    private $unexpectedError = false;
 
-    /** @return void */
     public function setURLFailed()
     {
         $this->urlFailed = true;
+    }
+
+    public function setUnexpectedErrorOccurred()
+    {
+        $this->unexpectedError = true;
     }
 
     /** @return boolean */
@@ -46,6 +51,12 @@ class ScraperView
     /** @return string HTML */
     private function getErrorMessage()
     {
-        return $this->urlFailed ? "Failed to retrieve the specified URL" : "";
+        if ($this->urlFailed) {
+            return "Failed to retrieve the specified URL";
+        }
+        if ($this->unexpectedError) {
+            return "An unexpected error occurred, try again later.";
+        }
+        return "";
     }
 }

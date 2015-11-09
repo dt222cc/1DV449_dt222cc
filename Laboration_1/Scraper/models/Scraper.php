@@ -40,7 +40,7 @@ class Scraper
 
         //Experimental
         for($i = 0; $i < sizeof($urls); $i++) {
-            $availableDays = $this->getCalendarOwnersAvailableDays($urls[$i]);
+            $availableDays[] = $this->getCalendarOwnersAvailableDays($urls[$i]);
         }
         return $availableDays;
     }
@@ -66,11 +66,11 @@ class Scraper
      * Work in progress
      *
      * @param string
-     * @return ? A calendar owner's available days
+     * @return string[] A calendar owner's available days
      */
     private function getCalendarOwnersAvailableDays($url)
     {
-        //Remove the last / because that messed things up (took some time finding this, did a dump on the $data)
+        //Remove the last / because that messed things up
         $url = rtrim($url, '/');
         echo "<p>$url</p>";
 
@@ -80,10 +80,19 @@ class Scraper
             $dom = new \DOMDocument();
 
             if ($dom->loadHTML($data)) {
-                //
+                $availableDays = array();
+                $days = $dom->getElementsByTagName("th");
+                $statuses = $dom->getElementsByTagName("td");
+
+                for ($i = 0; $i < $days->length; $i++) {
+                    //Convert to lower case to handle inconsistency
+                    if (strtolower($statuses->item($i)->nodeValue) == "ok") {
+                        $availableDays[] = $days->item($i)->nodeValue;
+                    }
+                }
+                return $availableDays;
             }
-            return true;
         }
-        return false;
+        return null;
     }
 }
