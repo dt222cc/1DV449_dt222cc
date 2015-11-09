@@ -34,7 +34,7 @@ class ScraperView
     public function getScraperForm()
     {
         return "
-            " . $this->doErrorMessage() . "
+            " . $this->getErrorMessage() . "
             <form method='post'>
                 <label for='" . self::$scraperURL . "'>Ange url: </label>
                 <input type='text' name='" . self::$scraperURL . "' value='" . self::$baseURL . "'>
@@ -44,7 +44,7 @@ class ScraperView
     }
 
     /** @return string HTML */
-    private function doErrorMessage()
+    private function getErrorMessage()
     {
         return $this->urlFailed ? "Failed to retrieve the specified URL" : "";
     }
