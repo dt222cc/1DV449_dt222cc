@@ -9,19 +9,26 @@ class ScraperView
     private static $scraperURL = "ScraperView::URL";
     private static $scraperSubmit = "ScraperView::Submit";
 
-    /** For error message */
-    private $urlFailed = false;
+    /** Error Messages, Start */
+    private $urlInvalid = false;
     private $unexpectedError = false;
+    private $noAvailableDaysError = false;
 
-    public function setURLFailed()
+    public function setURLInvalid()
     {
-        $this->urlFailed = true;
+        $this->urlInvalid = true;
     }
 
     public function setUnexpectedErrorOccurred()
     {
         $this->unexpectedError = true;
     }
+
+    public function setNoAvailableDays()
+    {
+        $this->noAvailableDaysError = true;
+    }
+    /** Error Messages, End */
 
     /** @return boolean */
     public function userWantsToScrape()
@@ -39,7 +46,7 @@ class ScraperView
     public function getScraperForm()
     {
         return "
-            " . $this->getErrorMessage() . "
+            <div class='text-danger'>" . $this->getErrorMessage() . "</div>
             <form method='post'>
                 <label for='" . self::$scraperURL . "'>Ange url: </label>
                 <input type='text' name='" . self::$scraperURL . "' value='" . self::$baseURL . "'>
@@ -51,11 +58,14 @@ class ScraperView
     /** @return string HTML */
     private function getErrorMessage()
     {
-        if ($this->urlFailed) {
-            return "Failed to retrieve the specified URL";
+        if ($this->urlInvalid) {
+            return "Failed to retrieve the specified URL.";
         }
         if ($this->unexpectedError) {
             return "An unexpected error occurred, try again later.";
+        }
+        if ($this->noAvailableDaysError) {
+            return "There's no matching available days.";
         }
         return "";
     }

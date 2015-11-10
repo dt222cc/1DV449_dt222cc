@@ -8,7 +8,7 @@ class ScraperController
      */
     private $model;
     private $view;
-    
+
     /**
      * @param models/Scraper
      * @param views/ScraperView
@@ -18,58 +18,41 @@ class ScraperController
         $this->model = $m;
         $this->view = $v;
     }
-    
+
     /**
      * The Web agent scraper
      */
     public function doWebsiteScraperService()
     {
-        if ($this->view->userWantsToScrape()) {
-            //1. Do the initial work, get URLs
-            $baseURL = $this->view->getURLToScrape();
-            $urls = $this->model->getURLs($baseURL);
-
-            //2. If URL was invalid
-            if ($urls == null) {
-                $this->view->setURLFailed();
-            }
-            //3. Do some scraping
-            else {
-                try {
-                    //1. Calendar Scrape
-                    echo "<p>Scrape: $urls[0] </p>";
-                    $this->doCalendarScrape($urls[0]);
-
-                    //2. Theater Scrape
-                    //echo "Scrape: " . $urls[1] . "<br>";
-
-                    //3. Restaurant Scrape
-                    //echo "Scrape: " . $urls[2] . "<br>";
+        try {
+            if ($this->view->userWantsToScrape()) {
+                /* Do the initial work, get URLs */
+                $baseURL = $this->view->getURLToScrape();
+                $urls = $this->model->getURLs($baseURL);
+                if (empty($urls)) {
+                    throw new InvalidURLException();
                 }
-                catch (Exception $e) {
-                    $this->view->setUnexpectedErrorOccurred();
+
+                /* Calendar Scrape */
+                $calendarOwnersURLs = $this->model->getURLs($urls[0]);
+                $availableDays = $this->model->getAvailableDays($calendarOwnersURLs);
+                if (empty($availableDays)) {
+                    throw new NoAvailableDaysException();
                 }
+
+                /* Theater Scrape (If there's available days)*/
+
+                /* Restaurant Scrape */
             }
         }
-    }
-
-    /**
-     * @param string
-     * @return bool
-     * @throws Exception
-     */
-    private function doCalendarScrape($url)
-    {
-        $calendarOwnerURLs = $this->model->getURLs($url);
-
-        $availableDays = $this->model->getAvailableDays($calendarOwnerURLs);
-
-        if ($availableDays == null) {
-            throw new Exception();
+        catch (InvalidURLException $e) {
+            $this->view->setURLInvalid();
         }
-
-        var_dump($availableDays);
-        //Need to figure out how to keep days that match
-        //Cannot find anything on intersect with arrays inside an array
+        catch (NoAvailableDaysException $e) {
+            $this->view->setNoAvailableDays();
+        }
+        catch (Exception $e) {
+            $this->view->setUnexpectedErrorOccurred();
+        }
     }
 }

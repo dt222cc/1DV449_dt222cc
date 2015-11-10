@@ -12,18 +12,20 @@ class LayoutView
      */
     public function render(ScraperView $scraperView)
     {
-        echo "<!DOCTYPE html>
+        echo '<!DOCTYPE html>
             <html>
                 <head>
-                    <meta charset='utf-8'>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link rel="stylesheet" href="css/style.css">
                     <title>A1-dt222cc</title>
                 </head>
                 <body>
-                    <div class='container'>
-                        " . $scraperView->getScraperForm() . "
+                    <div class="container">
+                        ' . $scraperView->getScraperForm() . '
                     </div>
                 </body>
             </html>
-        ";
+        ';
     }
 }

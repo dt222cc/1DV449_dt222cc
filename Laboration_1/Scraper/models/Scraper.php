@@ -8,15 +8,15 @@ class Scraper
      */
     public function getURLs($baseURL)
     {
+        $urls = array();
         $data = $this->curlGetRequest($baseURL);
 
-        //If URL was valid and returned data
+        //Invalid URL
         if ($data != null) {
             $dom = new \DOMDocument();
 
             if ($dom->loadHTML($data)) {
                 $links = $dom->getElementsByTagName('a');
-                $urls = array();
 
                 foreach ($links as $node) {
                     $result = $node->getAttribute('href');
@@ -24,30 +24,30 @@ class Scraper
                     $urlExtension = preg_replace('/\//', "", $result);
                     $urls[] = $baseURL . $urlExtension . '/';
                 }
-                return $urls;
             }
         }
-        return null;
+        //Empty or with URLs
+        return $urls;
     }
 
     /**
      * @param string
-     * @return string[]
+     * @return string[] Available days
      */
     public function getAvailableDays($urls)
     {
         $availableDays = array();
 
-        //Experimental
         for($i = 0; $i < sizeof($urls); $i++) {
             $availableDays[] = $this->getCalendarOwnersAvailableDays($urls[$i]);
         }
-        return $availableDays;
+
+        return call_user_func_array('array_intersect', $availableDays);
     }
 
-    /** 
+    /**
      * @param string
-     * @return string Request results
+     * @return mixed Results from url (HTML)
      */
     private function curlGetRequest($url)
     {
@@ -63,8 +63,6 @@ class Scraper
     }
 
     /**
-     * Work in progress
-     *
      * @param string
      * @return string[] A calendar owner's available days
      */
@@ -72,27 +70,23 @@ class Scraper
     {
         //Remove the last / because that messed things up
         $url = rtrim($url, '/');
-        echo "<p>$url</p>";
 
+        $availableDays = array();
         $data = $this->curlGetRequest($url);
+        $dom = new \DOMDocument();
 
-        if ($data != null) {
-            $dom = new \DOMDocument();
+        if ($dom->loadHTML($data)) {
+            $days = $dom->getElementsByTagName("th");
+            $statuses = $dom->getElementsByTagName("td");
 
-            if ($dom->loadHTML($data)) {
-                $availableDays = array();
-                $days = $dom->getElementsByTagName("th");
-                $statuses = $dom->getElementsByTagName("td");
-
-                for ($i = 0; $i < $days->length; $i++) {
-                    //Convert to lower case to handle inconsistency
-                    if (strtolower($statuses->item($i)->nodeValue) == "ok") {
-                        $availableDays[] = $days->item($i)->nodeValue;
-                    }
+            for ($i = 0; $i < $days->length; $i++) {
+                //Convert to lower case to handle inconsistency
+                if (strtolower($statuses->item($i)->nodeValue) == "ok") {
+                    $availableDays[] = $days->item($i)->nodeValue;
                 }
-                return $availableDays;
             }
         }
-        return null;
+        //Empty or with available days
+        return $availableDays;
     }
 }
