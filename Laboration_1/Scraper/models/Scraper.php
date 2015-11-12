@@ -70,7 +70,7 @@ class Scraper
                 //Collect available days (usage = to match days)
                 //array(3) { [0]=> string(6) "Fredag" [1]=> string(7) "Lördag" [2]=> string(7) "Söndag" }
                 foreach ($dayOptions as $day) {
-                    $dayOptionsList[] = $day->nodeValue;
+                    $dayOptionList[] = $day->nodeValue;
                 }
                 //For every available day we collect movies from that specific day
                 foreach($days as $availableDay) {
@@ -98,7 +98,6 @@ class Scraper
 
                                 //Format as arrays (with keys) with json_decode so we can work with it more efficient
                                 $movies = json_decode($data);
-
                                 foreach($movies as $movie) {
                                     //Keep available movies. Should be 6 movies to keep
                                     if ($movie->status == 1) {
@@ -163,27 +162,5 @@ class Scraper
         }
         //Empty or with available days
         return $availableDays;
-    }
-
-    /**
-     * Tried the other way, could not figure out the different string lengths (Lördag7 and Lördag6)
-     * @param string[] Days in english
-     * @return string[] Days in swedish
-     */
-    private function getDayInEnglish($dayInSwedish)
-    {
-        $dayInEnglish = "";
-
-        if (strcasecmp($dayInSwedish, "Fredag") == 0) {
-            $dayInEnglish =  "Friday";
-        }
-        if (strcasecmp($dayInSwedish, "Lördag")) {
-            $dayInEnglish =  "Saturday";
-        }
-        if (strcasecmp($dayInSwedish, "Söndag")) {
-            $dayInEnglish =  "Sunday";
-        }
-
-        return $dayInEnglish;
     }
 }
