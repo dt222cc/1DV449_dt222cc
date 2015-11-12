@@ -41,6 +41,11 @@ class ScraperController
                 }
 
                 /* Theater Scrape (If there's available days)*/
+                $availableMovies = $this->model->getAvailableMovies($urls[1], $availableDays);
+                var_dump($availableMovies);
+                if (empty($availableMovies)) {
+                    throw new NoAvailableMoviesException();
+                }
 
                 /* Restaurant Scrape */
             }
@@ -50,6 +55,9 @@ class ScraperController
         }
         catch (NoAvailableDaysException $e) {
             $this->view->setNoAvailableDays();
+        }
+        catch (NoAvailableMoviesException $e) {
+            $this->view->setNoAvailableMovies();
         }
         catch (Exception $e) {
             $this->view->setUnexpectedErrorOccurred();

@@ -7,6 +7,7 @@ require_once("views/ScraperView.php");
 require_once("controllers/ScraperController.php");
 require_once("exceptions/NoAvailableDaysException.php");
 require_once("exceptions/InvalidURLException.php");
+require_once("exceptions/NoAvailableMoviesException.php");
 
 // INITIATE OBJECTS AND DO DEPENDENCY INJECTION...
 $m = new Scraper();

@@ -13,6 +13,7 @@ class ScraperView
     private $urlInvalid = false;
     private $unexpectedError = false;
     private $noAvailableDaysError = false;
+    private $noAvailableMoviesError = false;
 
     public function setURLInvalid()
     {
@@ -28,6 +29,12 @@ class ScraperView
     {
         $this->noAvailableDaysError = true;
     }
+
+    public function setNoAvailableMovies()
+    {
+        $this->noAvailableMoviesError = true;
+    }
+
     /** Error Messages, End */
 
     /** @return boolean */
@@ -66,6 +73,9 @@ class ScraperView
         }
         if ($this->noAvailableDaysError) {
             return "There's no matching available days.";
+        }
+        if ($this->noAvailableMoviesError) {
+            return "There's no available movies, it's packed :(";
         }
         return "";
     }
