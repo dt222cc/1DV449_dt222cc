@@ -55,7 +55,7 @@ class Scraper
      */
     public function getAvailableMovies($url, $days)
     {
-        $dayOptionsList = array();
+        $dayOptionList = array();
         $availableMovies = array();
         $data = $this->curlGetRequest($url);
 
@@ -76,24 +76,24 @@ class Scraper
                 foreach($days as $availableDay) {
                     $thisDay = "";
                     if ($availableDay == "Friday") {
-                        $thisDay = $dayOptionsList[0];
+                        $thisDay = $dayOptionList[0];
                     }
                     if ($availableDay == "Saturday") {
-                        $thisDay = $dayOptionsList[1];
+                        $thisDay = $dayOptionList[1];
                     }
                     if ($availableDay == "Sunday") {
-                        $thisDay = $dayOptionsList[2];
+                        $thisDay = $dayOptionList[2];
                     }
                     foreach ($dayOptions as $day) {
                         //When a day match
                         if ($day->nodeValue == $thisDay) {
-                            //We collect every movies for the specific day
+                            //We collect every movies for that specific day
                             foreach ($movieOptions as $movieNode) {
-                                //For this situation: http://localhost:8080/cinema/check?day=02&movie=01 | &movie=02 | &movie=03
+                                //Examples of urls: http://localhost:8080/cinema/check?day=02&movie=01 | &movie=02 | &movie=03
                                 $urlForMovie = $url . "check?day=" . $day->getAttribute("value") .
                                     "&movie=" . $movieNode->getAttribute("value");
                                 $data = $this->curlGetRequest($urlForMovie);
-                                //$data example:
+                                //Examples of $data:
                                 //string(124)"[{"status":1,"time":"16:00","movie":"02"},{"status":1,"time":"18:00","movie":"02"},{"status":0,"time":"21:00","movie":"02"}]"
 
                                 //Format as arrays (with keys) with json_decode so we can work with it more efficient
