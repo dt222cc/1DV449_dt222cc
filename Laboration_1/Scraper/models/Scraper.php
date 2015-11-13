@@ -28,13 +28,13 @@ class Scraper
             $dom = new \DOMDocument();
 
             if ($dom->loadHTML($data)) {
-                $links = $dom->getElementsByTagName('a');
+                $links = $dom->getElementsByTagName("a");
 
                 foreach ($links as $node) {
-                    $result = $node->getAttribute('href');
+                    $result = $node->getAttribute("href");
                     //Remove the / from the result
-                    $urlExtension = preg_replace('/\//', "", $result);
-                    $urls[] = $baseURL . $urlExtension . '/';
+                    $urlExtension = preg_replace("/\//", "", $result);
+                    $urls[] = $baseURL . $urlExtension . "/";
                 }
             }
         }
@@ -54,7 +54,7 @@ class Scraper
             $availableDays[] = $this->getCalendarOwnersAvailableDays($urls[$i]);
         }
         //Keep days that intersects
-        $availableDays = call_user_func_array('array_intersect', $availableDays);
+        $availableDays = call_user_func_array("array_intersect", $availableDays);
         //Rebase array keys
         $availableDays = array_values($availableDays);
 
@@ -76,8 +76,8 @@ class Scraper
 
             if ($dom->loadHTML($data)) {
                 $xpath = new \DOMXPath($dom);
-                $dayOptions = $xpath->query('//select[@id = "day"]/option[not(@disabled)]');
-                $movieOptions = $xpath->query('//select[@id = "movie"]/option[not(@disabled)]');
+                $dayOptions = $xpath->query("//select[@id='day']/option[not(@disabled)]");
+                $movieOptions = $xpath->query("//select[@id='movie']/option[not(@disabled)]");
 
                 //Collect available days (usage = to match days)
                 //array(3) { [0]=> string(6) "Fredag" [1]=> string(7) "Lördag" [2]=> string(7) "Söndag" }
@@ -139,7 +139,12 @@ class Scraper
             $dom = new \DOMDocument();
 
             if ($dom->loadHTML($data)) {
-                $this->availableTables = "Test";
+                $xpath = new \DOMXPath($dom);
+                $availableTables = $xpath->query("//input[@type='radio']");
+
+                foreach ($availableTables as $table) {
+                    var_dump($table->getAttribute("value"));
+                }
             }
         }
         //Empty or with available tables
@@ -170,7 +175,7 @@ class Scraper
     private function getCalendarOwnersAvailableDays($url)
     {
         //Remove the last / because that messed things up
-        $url = rtrim($url, '/');
+        $url = rtrim($url, "/");
 
         $availableDays = array();
         $data = $this->curlGetRequest($url);
