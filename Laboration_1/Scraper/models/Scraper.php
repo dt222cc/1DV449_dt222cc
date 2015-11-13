@@ -111,13 +111,13 @@ class Scraper
                                 //Format as arrays (with keys) with json_decode so we can work with it more efficient
                                 $movies = json_decode($data);
                                 foreach($movies as $movie) {
-                                    //Keep available movies. Should be 6 movies to keep
+                                    //Keep available movies.
                                     if ($movie->status == 1) {
                                         //Add to movie list, perhaps better practise to work with model class
                                         $this->availableMovies[] = array(
                                             "name" => $movieNode->nodeValue,
                                             "time" => $movie->time,
-                                            "day" => $day->nodeValue,
+                                            "day" => $availableDay,
                                         );
                                     }
                                 }
@@ -131,7 +131,7 @@ class Scraper
         return $this->availableMovies;
     }
 
-    public function getAvailableTables($url, $movies)
+    public function getAvailableTables($url, $movie)
     {
         $data = $this->curlGetRequest($url);
 
@@ -143,7 +143,24 @@ class Scraper
                 $availableTables = $xpath->query("//input[@type='radio']");
 
                 foreach ($availableTables as $table) {
-                    var_dump($table->getAttribute("value"));
+                    $value = $table->getAttribute("value");
+
+                    //As long as the picked movie starts/ends before the schedule
+                    if($movie['day'] === "Friday" && substr($value, 0,3) === "fre") {
+                        if(intval($movie['time']) < intval(substr($value, 3, 2))) {
+                            $this->availableTables[] = $value;
+                        }
+                    }
+                    if($movie['day'] === "Saturday" && substr($value, 0,3) === "lor") {
+                        if(intval($movie['time']) < intval(substr($value, 3, 2))) {
+                            $this->availableTables[] = $value;
+                        }
+                    }
+                    if($movie['day'] === "Sunday" && substr($value, 0,3) === "son") {
+                        if(intval($movie['time']) < intval(substr($value, 3, 2))) {
+                            $this->availableTables[] = $value;
+                        }
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ class ScraperView
     private static $scraperURL = "ScraperView::URL";
     private static $scraperSubmit = "ScraperView::Submit";
     private static $tableURL = "table";
+    private static $availableMovies = "Scraper::AvailableMovies";
 
     /** View States (Error messages) */
     private $urlInvalid = false;
@@ -60,6 +61,11 @@ class ScraperView
         return isset($_POST[self::$scraperURL]) ? $_POST[self::$scraperURL] : null;
     }
 
+    public function getMovieParam()
+    {
+        return isset($_GET["movie"]) ? $_GET["movie"] : null;
+    }
+
     /**
      * To detect user input/action (start crawling)
      *
@@ -77,7 +83,8 @@ class ScraperView
      */
     public function userWantsToBook()
     {
-        return isset($_GET[self::$tableURL]);
+        //Checks if 'table' is in the url
+        return strpos($_SERVER["REQUEST_URI"], self::$tableURL);
     }
 
     /**
@@ -92,7 +99,7 @@ class ScraperView
             return $this->getBookingForm();
         }
         //2. Default with available movie list
-        if ($this->userWantsToScrape() && !empty($this->model->getMovies())) {
+        if ($this->userWantsToScrape()) {
             return $this->getScraperForm() . $this->getMovieList();
         }
         //1. Default
@@ -124,13 +131,27 @@ class ScraperView
     public function getMovieList()
     {
         $movies = $this->model->getMovies();
-        $movieListHTML = "";
 
+        if (empty($movies)) {
+            return "";
+        }
+
+        $movieListHTML = "";
+        $index = 0;
         foreach($movies as $movie) {
+            $day = "";
+            if ($movie['day'] == "Friday") {
+                $day = "fredag";
+            } else if ($movie['day'] == "Saturday") {
+                $day = "l&ouml;rdag";
+            } else if ($movie['day'] == "Sunday") {
+                $day = "s&ouml;ndag";
+            }
+
             $movieListHTML .= "<li>Filmen <strong>" . $movie['name'] . "</strong> klockan "
-                . $movie['time'] . " p&aring; " . strtolower($movie['day']);
-            $movieListHTML .= " <a href='" . $_SERVER["REQUEST_URI"] . "?" . self::$tableURL
-                . "'>V&auml;lj denna och boka bord</a></li>";
+                . $movie['time'] . " p&aring; " . $day;
+            $movieListHTML .= " <a href='" . $_SERVER["REQUEST_URI"] . "/" . self::$tableURL
+                . "?" . "movie=" . $index++ . "'>V&auml;lj denna och boka bord</a></li>";
         }
 
         return "
@@ -148,8 +169,29 @@ class ScraperView
      */
     private function getBookingForm()
     {
+        $tables = $this->model->getTables();
+        $movie = $_SESSION[self::$availableMovies][$this->getMovieParam()];
+
+        if (!empty($tables)) {
+            $tablesHTML = "";
+            foreach ($tables as $table) {
+                $time1 = substr($table, 3, 2);
+                $time2 = substr($table, 5, 2);
+
+                $tablesHTML .= "<li>Det finns ett ledigt bord mellan klockan " . $time1 . " och " . $time2
+                    . " efter att sett filmen ". $movie['name'] . " klockan " . substr($movie['time'], 0, 2) . " </li>";
+            }
+
+            return "
+                <h2>F&ouml;ljande tider &auml;r lediga att boka p&aring; zekes restaurang</h2>
+                <ul>
+                    $tablesHTML
+                </ul>
+            ";
+        }
         return "
-            <div>The Booking Form</div>
+            <p>Det fanns inga lediga tider att boka p&aring; zekes restaurang f&ouml;r filmen "
+            . $movie['name'] . " klockan " . substr($movie['time'], 0, 2) . "</p>
         ";
     }
 

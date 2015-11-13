@@ -50,10 +50,11 @@ class ScraperController
                     throw new NoAvailableMoviesException();
                 }
             }
-            /* Restaurant Scrape */
+            /* Dinner Scrape */
             if ($this->view->userWantsToBook()) {
-                $availableTables = $this->model->getAvailableTables($_SESSION[self::$urlsFromBaseURL][2], $_SESSION[self::$availableMovies]);
-                var_dump($availableTables);
+                $index = $this->view->getMovieParam();
+                $userPickedMovie = $_SESSION[self::$availableMovies][$index];
+                $this->model->getAvailableTables($_SESSION[self::$urlsFromBaseURL][2], $userPickedMovie);
             }
         }
         catch (InvalidURLException $e) {
