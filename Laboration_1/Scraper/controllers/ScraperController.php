@@ -40,9 +40,8 @@ class ScraperController
                     throw new NoAvailableDaysException();
                 }
 
-                /* Theater Scrape (If there's available days)*/
+                /* Theater Scrape (If there's available days) */
                 $availableMovies = $this->model->getAvailableMovies($urls[1], $availableDays);
-                var_dump($availableMovies);
                 if (empty($availableMovies)) {
                     throw new NoAvailableMoviesException();
                 }

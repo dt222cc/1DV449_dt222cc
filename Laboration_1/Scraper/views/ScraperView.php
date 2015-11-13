@@ -9,12 +9,27 @@ class ScraperView
     private static $scraperURL = "ScraperView::URL";
     private static $scraperSubmit = "ScraperView::Submit";
 
-    /** Error Messages, Start */
+    /** View States (Error messages) */
     private $urlInvalid = false;
     private $unexpectedError = false;
     private $noAvailableDaysError = false;
     private $noAvailableMoviesError = false;
 
+    /**
+     * Dependency injection
+     *
+     * @var /models/Scraper.php
+     */
+    private $model;
+
+    public function __construct($model)
+    {
+        $this->model = $model;
+    }
+
+    /**
+     * View state setters
+     */
     public function setURLInvalid()
     {
         $this->urlInvalid = true;
@@ -34,8 +49,6 @@ class ScraperView
     {
         $this->noAvailableMoviesError = true;
     }
-
-    /** Error Messages, End */
 
     /** @return boolean */
     public function userWantsToScrape()
@@ -60,6 +73,29 @@ class ScraperView
                 <input type='submit' name='" . self::$scraperSubmit . "' value='Start!'>
             </form>
         ";
+    }
+
+    /** @return string HTML  */
+    public function getMovieList()
+    {
+        //Only render this if there's an "available" movie list and user just pressed the submit URL button
+        if (!empty($movies = $this->model->getAvailableMovieList()) && $this->userWantsToScrape()) {
+            $movieListHTML = "";
+
+            foreach($movies as $movie) {
+                $movieListHTML .= "<li>Filmen <strong>" . $movie['name'] . "</strong> klockan " .
+                    $movie['time'] . " p&aring; " . strtolower($movie['day']);
+                $movieListHTML .= " <a href=''>V&auml;lj denna och boka bord</a></li>";
+            }
+
+            return "
+                <h2>F&ouml;ljande filmer hittades</h2>
+                <ul>
+                    $movieListHTML
+                </ul>
+            ";
+        }
+        return "";
     }
 
     /** @return string HTML */

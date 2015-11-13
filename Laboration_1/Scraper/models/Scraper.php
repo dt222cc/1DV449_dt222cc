@@ -2,6 +2,13 @@
 
 class Scraper
 {
+    private $availableMovieList = array();
+
+    public function getAvailableMovieList()
+    {
+        return $this->availableMovieList;
+    }
+
     /**
      * @param string
      * @return string[] URL | null
@@ -116,6 +123,7 @@ class Scraper
             }
         }
         //Empty or with movies
+        $this->availableMovieList = $availableMovies;
         return $availableMovies;
     }
 

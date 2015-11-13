@@ -11,7 +11,7 @@ require_once("exceptions/NoAvailableMoviesException.php");
 
 // INITIATE OBJECTS AND DO DEPENDENCY INJECTION...
 $m = new Scraper();
-$v = new ScraperView();
+$v = new ScraperView($m);
 $c = new ScraperController($m, $v);
 
 // START THE WEB AGENT SCRAPER...
