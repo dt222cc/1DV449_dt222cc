@@ -2,11 +2,17 @@
 
 class Scraper
 {
-    private $availableMovieList = array();
+    private $availableMovies = array();
+    private $availableTables = array();
 
-    public function getAvailableMovieList()
+    public function getMovies()
     {
-        return $this->availableMovieList;
+        return $this->availableMovies;
+    }
+
+    public function getTables()
+    {
+        return $this->availableTables;
     }
 
     /**
@@ -63,7 +69,6 @@ class Scraper
     public function getAvailableMovies($url, $days)
     {
         $dayOptionList = array();
-        $availableMovies = array();
         $data = $this->curlGetRequest($url);
 
         if ($data != null) {
@@ -109,7 +114,7 @@ class Scraper
                                     //Keep available movies. Should be 6 movies to keep
                                     if ($movie->status == 1) {
                                         //Add to movie list, perhaps better practise to work with model class
-                                        $availableMovies[] = array(
+                                        $this->availableMovies[] = array(
                                             "name" => $movieNode->nodeValue,
                                             "time" => $movie->time,
                                             "day" => $day->nodeValue,
@@ -122,9 +127,23 @@ class Scraper
                 }
             }
         }
-        //Empty or with movies
-        $this->availableMovieList = $availableMovies;
-        return $availableMovies;
+        //Empty or with available movies
+        return $this->availableMovies;
+    }
+
+    public function getAvailableTables($url, $movies)
+    {
+        $data = $this->curlGetRequest($url);
+
+        if ($data != null) {
+            $dom = new \DOMDocument();
+
+            if ($dom->loadHTML($data)) {
+                $this->availableTables = "Test";
+            }
+        }
+        //Empty or with available tables
+        return $this->availableTables;
     }
 
     /**

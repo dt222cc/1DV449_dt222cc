@@ -22,8 +22,7 @@ class LayoutView
                 </head>
                 <body>
                     <div class="container">
-                        ' . $scraperView->getScraperForm() . '
-                        ' . $scraperView->getMovieList() . '
+                        ' . $scraperView->getResponse() . '
                     </div>
                 </body>
             </html>

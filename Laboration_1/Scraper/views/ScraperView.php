@@ -8,6 +8,7 @@ class ScraperView
     /** Static variables for the ScraperForm */
     private static $scraperURL = "ScraperView::URL";
     private static $scraperSubmit = "ScraperView::Submit";
+    private static $tableURL = "table";
 
     /** View States (Error messages) */
     private $urlInvalid = false;
@@ -50,19 +51,59 @@ class ScraperView
         $this->noAvailableMoviesError = true;
     }
 
-    /** @return boolean */
-    public function userWantsToScrape()
-    {
-        return isset($_POST[self::$scraperSubmit]);
-    }
-
-    /** @return string URL | null */
+    /**
+     * Returns the URL base url
+     *
+     * @return string URL | null */
     public function getURLToScrape()
     {
         return isset($_POST[self::$scraperURL]) ? $_POST[self::$scraperURL] : null;
     }
 
-    /** @return string HTML  */
+    /**
+     * To detect user input/action (start crawling)
+     *
+     * @return boolean
+     */
+    public function userWantsToScrape()
+    {
+        return isset($_POST[self::$scraperSubmit]);
+    }
+
+    /**
+     * To detect if user wants to book (view available tables for specific movie)
+     *
+     * @return boolean
+     */
+    public function userWantsToBook()
+    {
+        return isset($_GET[self::$tableURL]);
+    }
+
+    /**
+     * Presents the correct view
+     *
+     * @return string HTML
+     */
+    public function getResponse()
+    {
+        //3. Show booking form (from #2)
+        if ($this->userWantsToBook()) {
+            return $this->getBookingForm();
+        }
+        //2. Default with available movie list
+        if ($this->userWantsToScrape() && !empty($this->model->getMovies())) {
+            return $this->getScraperForm() . $this->getMovieList();
+        }
+        //1. Default
+        return $this->getScraperForm();
+    }
+
+    /**
+     * Default view
+     *
+     * @return string HTML
+     */
     public function getScraperForm()
     {
         return "
@@ -75,30 +116,48 @@ class ScraperView
         ";
     }
 
-    /** @return string HTML  */
+    /**
+     * Available movies presentation
+     *
+     * @return string HTML
+     */
     public function getMovieList()
     {
-        //Only render this if there's an "available" movie list and user just pressed the submit URL button
-        if (!empty($movies = $this->model->getAvailableMovieList()) && $this->userWantsToScrape()) {
-            $movieListHTML = "";
+        $movies = $this->model->getMovies();
+        $movieListHTML = "";
 
-            foreach($movies as $movie) {
-                $movieListHTML .= "<li>Filmen <strong>" . $movie['name'] . "</strong> klockan " .
-                    $movie['time'] . " p&aring; " . strtolower($movie['day']);
-                $movieListHTML .= " <a href=''>V&auml;lj denna och boka bord</a></li>";
-            }
-
-            return "
-                <h2>F&ouml;ljande filmer hittades</h2>
-                <ul>
-                    $movieListHTML
-                </ul>
-            ";
+        foreach($movies as $movie) {
+            $movieListHTML .= "<li>Filmen <strong>" . $movie['name'] . "</strong> klockan "
+                . $movie['time'] . " p&aring; " . strtolower($movie['day']);
+            $movieListHTML .= " <a href='" . $_SERVER["REQUEST_URI"] . "?" . self::$tableURL
+                . "'>V&auml;lj denna och boka bord</a></li>";
         }
-        return "";
+
+        return "
+            <h2>F&ouml;ljande filmer hittades</h2>
+            <ul>
+                $movieListHTML
+            </ul>
+        ";
     }
 
-    /** @return string HTML */
+    /**
+     * Available tables presentation (booking)
+     *
+     * @return string HTML
+     */
+    private function getBookingForm()
+    {
+        return "
+            <div>The Booking Form</div>
+        ";
+    }
+
+    /**
+     * Display the proper error message depending on the situation
+     *
+     * @return string HTML
+     */
     private function getErrorMessage()
     {
         if ($this->urlInvalid) {

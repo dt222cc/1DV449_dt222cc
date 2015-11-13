@@ -9,6 +9,9 @@ require_once("exceptions/NoAvailableDaysException.php");
 require_once("exceptions/InvalidURLException.php");
 require_once("exceptions/NoAvailableMoviesException.php");
 
+//APPLICATION USES SESSIONS
+session_start();
+
 // INITIATE OBJECTS AND DO DEPENDENCY INJECTION...
 $m = new Scraper();
 $v = new ScraperView($m);
