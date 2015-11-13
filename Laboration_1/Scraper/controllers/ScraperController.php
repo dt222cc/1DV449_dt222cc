@@ -2,10 +2,6 @@
 
 class ScraperController
 {
-
-    private static $urlsFromBaseURL = "Scraper::UrlsFromBaseURL";
-    private static $availableMovies = "Scraper::AvailableMovies";
-
     /**
      * @var Scraper
      * @var ScraperView
@@ -32,29 +28,33 @@ class ScraperController
             if ($this->view->userWantsToScrape()) {
                 /* Do the initial work, get URLs */
                 $baseURL = $this->view->getURLToScrape();
-                $_SESSION[self::$urlsFromBaseURL] = $this->model->getURLs($baseURL);
-                if (empty($_SESSION[self::$urlsFromBaseURL])) {
+                $urlsFromBaseURL = $this->model->getURLs($baseURL);
+                if (empty($urlsFromBaseURL)) {
                     throw new InvalidURLException();
                 }
+                $this->view->setURLsFromBaseURL($urlsFromBaseURL);
 
                 /* Calendar Scrape */
-                $calendarOwnersURLs = $this->model->getURLs($_SESSION[self::$urlsFromBaseURL][0]);
+                $calendarOwnersURLs = $this->model->getURLs($urlsFromBaseURL[0]);
                 $availableDays = $this->model->getAvailableDays($calendarOwnersURLs);
                 if (empty($availableDays)) {
                     throw new NoAvailableDaysException();
                 }
 
                 /* Theater Scrape (If there's available days) */
-                $_SESSION[self::$availableMovies] = $this->model->getAvailableMovies($_SESSION[self::$urlsFromBaseURL][1], $availableDays);
-                if (empty($_SESSION[self::$availableMovies])) {
+                $availableMovies = $this->model->getAvailableMovies($urlsFromBaseURL[1], $availableDays);
+                if (empty($availableMovies)) {
                     throw new NoAvailableMoviesException();
                 }
+                $this->view->setAvailableMovies($availableMovies);
             }
             /* Dinner Scrape */
             if ($this->view->userWantsToBook()) {
                 $index = $this->view->getMovieParam();
-                $userPickedMovie = $_SESSION[self::$availableMovies][$index];
-                $this->model->getAvailableTables($_SESSION[self::$urlsFromBaseURL][2], $userPickedMovie);
+                $userPickedMovie = $this->view->getAvailableMovies()[$index];
+                $dinnerURL = $this->view->getURLsFromBaseURL()[2];
+                $availableTables = $this->model->getAvailableTables($dinnerURL, $userPickedMovie);
+                $this->view->setAvailableTables($availableTables);
             }
         }
         catch (InvalidURLException $e) {

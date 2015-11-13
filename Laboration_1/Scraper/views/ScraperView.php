@@ -8,8 +8,11 @@ class ScraperView
     /** Static variables for the ScraperForm */
     private static $scraperURL = "ScraperView::URL";
     private static $scraperSubmit = "ScraperView::Submit";
-    private static $tableURL = "table";
+    private static $urlsFromBaseURL = "Scraper::UrlsFromBaseURL";
     private static $availableMovies = "Scraper::AvailableMovies";
+    private static $availableTables = "Scraper::AvailableTables";
+    private static $tableURL = "table";
+    private static $movieParam = "movie";
 
     /** View States (Error messages) */
     private $urlInvalid = false;
@@ -30,7 +33,7 @@ class ScraperView
     }
 
     /**
-     * View state setters
+     * View state setters (error handling)
      */
     public function setURLInvalid()
     {
@@ -53,6 +56,46 @@ class ScraperView
     }
 
     /**
+     * Helper method/s getters
+     *
+     * @return string
+     */
+    public function getURLsFromBaseURL()
+    {
+        return isset($_SESSION[self::$urlsFromBaseURL]) ? $_SESSION[self::$urlsFromBaseURL] : "";
+    }
+
+    public function getAvailableMovies()
+    {
+        return isset($_SESSION[self::$availableMovies]) ? $_SESSION[self::$availableMovies] : array();
+    }
+
+    public function getAvailableTables()
+    {
+        return isset($_SESSION[self::$availableTables]) ? $_SESSION[self::$availableTables] : array();
+    }
+
+    /**
+     * Helper method/s setters
+     *
+     * @param mixed[]
+     */
+    public function setURLsFromBaseURL($urls)
+    {
+        $_SESSION[self::$availableMovies] = $urls;
+    }
+
+    public function setAvailableMovies($movies)
+    {
+        $_SESSION[self::$availableMovies] = $movies;
+    }
+
+    public function setAvailableTables($tables)
+    {
+        $_SESSION[self::$availableTables] = $tables;
+    }
+
+    /**
      * Returns the URL base url
      *
      * @return string URL | null */
@@ -63,7 +106,7 @@ class ScraperView
 
     public function getMovieParam()
     {
-        return isset($_GET["movie"]) ? $_GET["movie"] : null;
+        return isset($_GET[self::$movieParam]) ? $_GET[self::$movieParam] : null;
     }
 
     /**
@@ -111,7 +154,7 @@ class ScraperView
      *
      * @return string HTML
      */
-    public function getScraperForm()
+    private function getScraperForm()
     {
         return "
             <div class='text-danger'>" . $this->getErrorMessage() . "</div>
@@ -128,9 +171,9 @@ class ScraperView
      *
      * @return string HTML
      */
-    public function getMovieList()
+    private function getMovieList()
     {
-        $movies = $this->model->getMovies();
+        $movies = $this->getAvailableMovies();
 
         if (empty($movies)) {
             return "";
@@ -169,8 +212,8 @@ class ScraperView
      */
     private function getBookingForm()
     {
-        $tables = $this->model->getTables();
-        $movie = $_SESSION[self::$availableMovies][$this->getMovieParam()];
+        $tables = $this->getAvailableTables();
+        $movie = $this->getAvailableMovies()[$this->getMovieParam()];
 
         if (!empty($tables)) {
             $tablesHTML = "";
