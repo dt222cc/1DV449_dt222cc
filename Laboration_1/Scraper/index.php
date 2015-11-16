@@ -9,7 +9,7 @@ require_once("exceptions/NoAvailableDaysException.php");
 require_once("exceptions/InvalidURLException.php");
 require_once("exceptions/NoAvailableMoviesException.php");
 
-//APPLICATION USES SESSIONS
+// APPLICATION USES SESSIONS
 session_start();
 
 // INITIATE OBJECTS AND DO DEPENDENCY INJECTION...

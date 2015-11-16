@@ -2,9 +2,6 @@
 
 class ScraperView
 {
-    /** Pre-fill URL for getting started faster (Note remove later on) */
-    private static $baseURL = "http://localhost:8080/";
-
     /** Static variables for the ScraperForm */
     private static $scraperURL = "ScraperView::URL";
     private static $scraperSubmit = "ScraperView::Submit";
@@ -38,47 +35,31 @@ class ScraperView
     public function setURLInvalid()
     {
         $this->urlInvalid = true;
+        $this->unsetSessions(); //Bad URL
     }
 
     public function setUnexpectedErrorOccurred()
     {
         $this->unexpectedError = true;
+        $this->unsetSessions();
     }
 
     public function setNoAvailableDays()
     {
         $this->noAvailableDaysError = true;
+        $this->unsetSessions();
     }
 
     public function setNoAvailableMovies()
     {
         $this->noAvailableMoviesError = true;
+        $this->unsetSessions();
     }
 
     /**
-     * Helper method/s getters
+     * Setters
      *
-     * @return string
-     */
-    public function getURLsFromBaseURL()
-    {
-        return isset($_SESSION[self::$urlsFromBaseURL]) ? $_SESSION[self::$urlsFromBaseURL] : "";
-    }
-
-    public function getAvailableMovies()
-    {
-        return isset($_SESSION[self::$availableMovies]) ? $_SESSION[self::$availableMovies] : array();
-    }
-
-    public function getAvailableTables()
-    {
-        return isset($_SESSION[self::$availableTables]) ? $_SESSION[self::$availableTables] : array();
-    }
-
-    /**
-     * Helper method/s setters
-     *
-     * @param mixed[]
+     * @param array
      */
     public function setURLsFromBaseURL($urls)
     {
@@ -96,17 +77,52 @@ class ScraperView
     }
 
     /**
-     * Returns the URL base url
+     * Getters
      *
-     * @return string URL | null */
-    public function getURLToScrape()
+     * @return array | null
+     */
+    public function getURLsFromBaseURL()
     {
-        return isset($_POST[self::$scraperURL]) ? $_POST[self::$scraperURL] : null;
+        return isset($_SESSION[self::$urlsFromBaseURL]) ? $_SESSION[self::$urlsFromBaseURL] : null;
     }
 
+    public function getAvailableMovies()
+    {
+        return isset($_SESSION[self::$availableMovies]) ? $_SESSION[self::$availableMovies] : null;
+    }
+
+    public function getAvailableTables()
+    {
+        return isset($_SESSION[self::$availableTables]) ? $_SESSION[self::$availableTables] : null;
+    }
+
+    /**
+     * Return the movie param from URL (01 | 02 | 03)
+     *
+     * @return string | null
+     */
     public function getMovieParam()
     {
         return isset($_GET[self::$movieParam]) ? $_GET[self::$movieParam] : null;
+    }
+
+    /**
+     * Returns the URL base url.
+     * Add http:// and/or a trailing / if not present. Also replace ; with :
+     *
+     * @return string URL */
+    public function getURLToScrape()
+    {
+        $url = "";
+        if (isset($_POST[self::$scraperURL])) {
+            $url = $_POST[self::$scraperURL];
+            if (strpos($url, 'http://') === false){
+                $url = 'http://' . $url;
+            }
+            $url = preg_replace('/\;/', ":", $url);
+            $url = rtrim($url, '/') . "/";
+        }
+        return $url;
     }
 
     /**
@@ -137,13 +153,13 @@ class ScraperView
      */
     public function getResponse()
     {
-        //3. Show booking form (from #2)
+        //3. Show booking form (from #2 the movie list)
         if ($this->userWantsToBook()) {
             return $this->getBookingForm();
         }
-        //2. Default with available movie list
+        //2. With available movie list
         if ($this->userWantsToScrape()) {
-            return $this->getScraperForm() . $this->getMovieList();
+            return $this->getMovieList();
         }
         //1. Default
         return $this->getScraperForm();
@@ -160,7 +176,7 @@ class ScraperView
             <div class='text-danger'>" . $this->getErrorMessage() . "</div>
             <form method='post'>
                 <label for='" . self::$scraperURL . "'>Ange url: </label>
-                <input type='text' name='" . self::$scraperURL . "' value='" . self::$baseURL . "'>
+                <input type='text' name='" . self::$scraperURL . "' value='" . $this->getURLToScrape() . "'>
                 <input type='submit' name='" . self::$scraperSubmit . "' value='Start!'>
             </form>
         ";
@@ -173,13 +189,15 @@ class ScraperView
      */
     private function getMovieList()
     {
+        $formHTML = $this->getScraperForm();
         $movies = $this->getAvailableMovies();
 
+        //Default html
         if (empty($movies)) {
-            return "";
+            return $formHTML;
         }
 
-        $movieListHTML = "";
+        $listHTML = "";
         $index = 0;
         foreach($movies as $movie) {
             $day = "";
@@ -191,18 +209,20 @@ class ScraperView
                 $day = "s&ouml;ndag";
             }
 
-            $movieListHTML .= "<li>Filmen <strong>" . $movie['name'] . "</strong> klockan "
+            $listHTML .= "<li>Filmen <strong>" . $movie['name'] . "</strong> klockan "
                 . $movie['time'] . " p&aring; " . $day;
-            $movieListHTML .= " <a href='" . $_SERVER["REQUEST_URI"] . "/" . self::$tableURL
+            $listHTML .= " <a href='" . $_SERVER["REQUEST_URI"] . "/" . self::$tableURL
                 . "?" . "movie=" . $index++ . "'>V&auml;lj denna och boka bord</a></li>";
         }
 
-        return "
+        $movieListHTML = "
             <h2>F&ouml;ljande filmer hittades</h2>
             <ul>
-                $movieListHTML
+                $listHTML
             </ul>
         ";
+        //With the available movie list
+        return $formHTML . $movieListHTML;
     }
 
     /**
@@ -213,8 +233,15 @@ class ScraperView
     private function getBookingForm()
     {
         $tables = $this->getAvailableTables();
-        $movie = $this->getAvailableMovies()[$this->getMovieParam()];
+        $index = $this->getMovieParam();
+        $movies = $this->getAvailableMovies();
+        $movie = $movies[$index];
 
+        //By typing 'table' in the url without submitting a proper URL
+        if (empty($movies)) {
+            return "<p>Bad request</p>";
+        }
+        //There is available table/'s
         if (!empty($tables)) {
             $tablesHTML = "";
             foreach ($tables as $table) {
@@ -224,7 +251,6 @@ class ScraperView
                 $tablesHTML .= "<li>Det finns ett ledigt bord mellan klockan " . $time1 . " och " . $time2
                     . " efter att sett filmen ". $movie['name'] . " klockan " . substr($movie['time'], 0, 2) . " </li>";
             }
-
             return "
                 <h2>F&ouml;ljande tider &auml;r lediga att boka p&aring; zekes restaurang</h2>
                 <ul>
@@ -232,6 +258,7 @@ class ScraperView
                 </ul>
             ";
         }
+        //There is no available table/'s
         return "
             <p>Det fanns inga lediga tider att boka p&aring; zekes restaurang f&ouml;r filmen "
             . $movie['name'] . " klockan " . substr($movie['time'], 0, 2) . "</p>
@@ -258,5 +285,13 @@ class ScraperView
             return "There's no available movies, it's packed :(";
         }
         return "";
+    }
+
+    /**
+     * Unset some session variables if URL is bad, to prevent some presentation
+     */
+    private function unsetSessions()
+    {
+        unset($_SESSION[self::$availableMovies], $_SESSION[self::$availableTables]);
     }
 }

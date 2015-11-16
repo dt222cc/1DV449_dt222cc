@@ -12,7 +12,7 @@ class Scraper
         $data = $this->curlGetRequest($baseURL);
 
         if ($data != null) {
-            $dom = new \DOMDocument();
+            $dom = new DOMDocument();
 
             if ($dom->loadHTML($data)) {
                 $links = $dom->getElementsByTagName("a");
@@ -60,10 +60,10 @@ class Scraper
         $data = $this->curlGetRequest($url);
 
         if ($data != null) {
-            $dom = new \DOMDocument();
+            $dom = new DOMDocument();
 
             if ($dom->loadHTML($data)) {
-                $xpath = new \DOMXPath($dom);
+                $xpath = new DOMXPath($dom);
                 $dayOptions = $xpath->query("//select[@id='day']/option[not(@disabled)]");
                 $movieOptions = $xpath->query("//select[@id='movie']/option[not(@disabled)]");
 
@@ -125,10 +125,10 @@ class Scraper
         $data = $this->curlGetRequest($url);
 
         if ($data != null) {
-            $dom = new \DOMDocument();
+            $dom = new DOMDocument();
 
             if ($dom->loadHTML($data)) {
-                $xpath = new \DOMXPath($dom);
+                $xpath = new DOMXPath($dom);
                 $availableTables = $xpath->query("//input[@type='radio']");
 
                 foreach ($availableTables as $table) {
@@ -163,9 +163,10 @@ class Scraper
      */
     private function curlGetRequest($url)
     {
+        //Have some issues with this regarding the public server. $data returns as bool(false)
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL, $url); //http://localhost:8080/
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
         $data = curl_exec($ch);
@@ -185,7 +186,7 @@ class Scraper
 
         $availableDays = array();
         $data = $this->curlGetRequest($url);
-        $dom = new \DOMDocument();
+        $dom = new DOMDocument();
 
         if ($dom->loadHTML($data)) {
             $days = $dom->getElementsByTagName("th");

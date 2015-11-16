@@ -51,8 +51,10 @@ class ScraperController
             /* Dinner Scrape */
             if ($this->view->userWantsToBook()) {
                 $index = $this->view->getMovieParam();
-                $userPickedMovie = $this->view->getAvailableMovies()[$index];
-                $dinnerURL = $this->view->getURLsFromBaseURL()[2];
+                $movies = $this->view->getAvailableMovies();
+                $userPickedMovie = $movies[$index];
+                $urls = $this->view->getURLsFromBaseURL();
+                $dinnerURL = $urls[2];
                 $availableTables = $this->model->getAvailableTables($dinnerURL, $userPickedMovie);
                 $this->view->setAvailableTables($availableTables);
             }
