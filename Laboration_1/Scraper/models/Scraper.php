@@ -72,7 +72,12 @@ class Scraper
                 foreach ($dayOptions as $day) {
                     $dayOptionList[] = $day->nodeValue;
                 }
-                //For every available day we collect movies from that specific day
+                /*
+                 * For every available day we collect movies from that specific day.
+                 * Note: Days could be handled better, used both swedish and english as I had problems with translating
+                 * For example: "Lördag" === "Lördag" didn't not work, the difference being string7 and string6, odd.
+                 * Could use the english days below as session variable, from the calendar site, to make it more general
+                 */
                 foreach($days as $availableDay) {
                     $thisDay = "";
                     if ($availableDay == "Friday") {
@@ -93,13 +98,14 @@ class Scraper
                                 $urlForMovie = $url . "check?day=" . $day->getAttribute("value") .
                                     "&movie=" . $movieNode->getAttribute("value");
                                 $data = $this->curlGetRequest($urlForMovie);
-                                //Examples of $data:
-                                //string(124)"[{"status":1,"time":"16:00","movie":"02"},{"status":1,"time":"18:00","movie":"02"},{"status":0,"time":"21:00","movie":"02"}]"
+                                //$data = string(124)"[ {"status":1,"time":"16:00","movie":"02"},
+                                //                      {"status":1,"time":"18:00","movie":"02"},
+                                //                      {"status":0,"time":"21:00","movie":"02"}]"
 
                                 //Format as arrays (with keys) with json_decode so we can work with it more efficient
                                 $movies = json_decode($data);
                                 foreach($movies as $movie) {
-                                    //Keep available movies.
+                                    //Keep available movies, status 1.
                                     if ($movie->status == 1) {
                                         //Add to movie list, perhaps better practise to work with model class
                                         $availableMovies[] = array(
