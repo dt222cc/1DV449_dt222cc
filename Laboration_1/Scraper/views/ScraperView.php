@@ -63,7 +63,7 @@ class ScraperView
      */
     public function setURLsFromBaseURL($urls)
     {
-        $_SESSION[self::$availableMovies] = $urls;
+        $_SESSION[self::$urlsFromBaseURL] = $urls;
     }
 
     public function setAvailableMovies($movies)
