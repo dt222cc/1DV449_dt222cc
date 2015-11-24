@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  {{>head}}
+  <style>
+    .logout {
+      text-align: right;
+      margin-right: 10px;
+      color: red;
+    }
+  </style>
+  <body>
+    <div class="logout">
+      <a href="/logout">Log out</a>
+    </div>
+    {{{body}}}
+    <script>
+      $(document).ready(function() {
+        MessageBoard.getMessages();
+      });
+    </script>
+  </body>
+</html>
