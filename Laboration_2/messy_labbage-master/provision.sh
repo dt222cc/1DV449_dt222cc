@@ -44,8 +44,3 @@ export HOME=/home/root
 # Installing NPM packages
 echo "PATH=$PATH:/vagrant/node_modules/.bin" >> /home/vagrant/.bashrc
 PATH=$PATH:/vagrant/node_modules/.bin
-
-echo "Installing for like a noob for f-ing windows"
-sudo npm install express -g -no-bin-links
-sudo npm install
-sudo npm install https://github.com/mapbox/node-sqlite3/tarball/master --no-bin-links
