@@ -16,7 +16,7 @@
 	- [Skript vid slutet](#skript-vid-slutet)
 	- [Inline kod](#inline-kod)
 	- [Minifiera JavaScript](#minifiera-javascript)
-- [Egna reflektioner](#egna-reflektioner)
+- [Egna övergripande reflektioner](#egna-%C3%B6vergripande-reflektioner)
 - [Referenser](#referenser)
 
 ## Säkerhetsproblem
@@ -34,7 +34,7 @@ Risker för detta är att de elaka användarna kan förändra SQL satsens uppbyg
 För att förhindra injektionen ska man separera opålitliga uppgifter från kommandon och frågor.
 
 <b>Referenser:</b><br>
-[[2] OWASP, "Top 10 2013 - A1 Injection"](#s%C3%A4kerhet)
+[[1] OWASP, "Top 10 2013 - A1 Injection"](#s%C3%A4kerhet)
 
 
 ### #Trasiga autentisering och sessionshantering
@@ -45,7 +45,7 @@ Det verkar som att man är fortfarande inloggad även om man klickar på "log ou
 Se till att login/logout sessioner är verkligen satta korrekt när man loggar in och ut eller att de förstörs när man loggar ut.
 
 <b>Referenser:</b><br>
-[[3] OWASP, "Top 10 2013 - A2 Broken Authentication and Session Management"](#s%C3%A4kerhet)
+[[2] OWASP, "Top 10 2013 - A2 Broken Authentication and Session Management"](#s%C3%A4kerhet)
 
 
 ### #Cross-Site Scripting (XSS)
@@ -56,10 +56,10 @@ Det verkar som att indatan inte valideras/filtreras emot XSS. Alltså att elaka 
 Följder kan variera från en småaktig obehag till en betydande säkerhetsrisk, beroende på hur känsliga de data som hanteras av den utsatta platsen och den typ av skydd som genomförst av webbplatsens ägare.
 
 <b>Åtgärder:</b><br>
-Validera indata (finns flera olika sätt, t.ex bara tillåta vissa tecken) och filtrera utdata. En “whitelist” av tillåtna tecken rekommenderas att ha eftersom det hjälper till att skydda mot XSS, dock är det inte ett helt fullständigt skydd (Läs mer i [4])
+Validera indata (finns flera olika sätt, t.ex bara tillåta vissa tecken) och filtrera utdata. En “whitelist” av tillåtna tecken rekommenderas att ha eftersom det hjälper till att skydda mot XSS, dock är det inte ett helt fullständigt skydd (Läs mer i [3])
 
 <b>Referenser:</b><br>
-[[4] OWASP, "Top 10 2013 - A3 Cross-Site Scripting (XSS)"](#s%C3%A4kerhet)
+[[3] OWASP, "Top 10 2013 - A3 Cross-Site Scripting (XSS)"](#s%C3%A4kerhet)
 
 
 ### #Osäkra direkta objektreferenser
@@ -73,7 +73,7 @@ Detta utgör en säkerhetsrisk då att vem som helst som ladda ned databasen och
 Placera `.db` filer så att man inte kan komma åt dem via URLn, t.ex i PHP så kunde man sätta filen i en mapp på rootnivå.
 
 <b>Referenser:</b><br>
-[[5] OWASP, "Top 10 2013 - A4 Insecure Direct Object References"](#s%C3%A4kerhet)
+[[4] OWASP, "Top 10 2013 - A4 Insecure Direct Object References"](#s%C3%A4kerhet)
 
 
 ### #Exponering av känslig data
@@ -87,7 +87,7 @@ Attackerarna kan komma åt känslig data som användarinformation (lösenord) oc
 Kryptera uppgifter istället för att ha dem i klartext. Hasha lösenord, SALT kan användas för att ge mer säkerhet åt krypteringen.
 
 <b>Referenser:</b><br>
-[[6] OWASP, "Top 10 2013 - A6 Sensitive Data Exposure"](#s%C3%A4kerhet)
+[[5] OWASP, "Top 10 2013 - A6 Sensitive Data Exposure"](#s%C3%A4kerhet)
 
 
 ### #Saknad åtkomstkontroll på funktionsnivå
@@ -103,7 +103,7 @@ Det är inte tillräckligt att bara inte visa "länkar" eller "knappar" till sky
 Det behövs åtkomstkontroller också.
 
 <b>Referenser:</b><br>
-[[7] OWASP, "Top 10 2013 - A7 Missing Function Level Access Control"](#s%C3%A4kerhet)
+[[6] OWASP, "Top 10 2013 - A7 Missing Function Level Access Control"](#s%C3%A4kerhet)
 
 ### #Cross-Site Request Forgery (CSRF)
 <b>Problem:</b><br>
@@ -116,8 +116,8 @@ Detta är en typ av attack där användarens webbläsare tvingas att skicka ovä
 Implementera CSRF skydd, t.ex "Synchronizer token pattern". OWASP har en cheat sheet för CSRF-attacker.
 
 <b>Referenser:</b><br>
-[[8] OWASP, "Top 10 2013 - A8 Cross-Site Request Forgery (CSRF)"](#s%C3%A4kerhet)<br>
-[[9] OWASP, "Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet"](#s%C3%A4kerhet)
+[[7] OWASP, "Top 10 2013 - A8 Cross-Site Request Forgery (CSRF)"](#s%C3%A4kerhet)<br>
+[[8] OWASP, "Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet"](#s%C3%A4kerhet)
 
 ***
 
@@ -135,9 +135,9 @@ Genom att hålla kvar data i minnet minskas antalet HTTP förfrågninar vilket i
 Många resurser kan cachas, t.ex css och bilder, dock ej meddelanden. Se till att behålla cachen i ett par minuter eller timmar eller ett rimligt tid som verkar passa bra.
 
 <b>Referenser:</b><br>
-[[12] Steve Sounders, "High Performance Web Sites" - Rule 3: Add an Expires Header](#prestanda)<br>
-[[13] Mark Nottingham, "Caching Tutorial"](#prestanda)<br>
-[[14] Kyle Young, "A Beginner's Guide to HTTP Cache Headers"](#prestanda)
+[[10] Steve Sounders, "High Performance Web Sites" - Rule 3: Add an Expires Header](#prestanda)<br>
+[[11] Mark Nottingham, "Caching Tutorial"](#prestanda)<br>
+[[12] Kyle Young, "A Beginner's Guide to HTTP Cache Headers"](#prestanda)
 
 
 ### #Skript vid slutet
@@ -148,7 +148,7 @@ JavaScript filerna `Message.js` och `MessageBoard.js` länkas in i headern. Dett
 Placera dem vid slutet istället, innan `</body>`.
 
 <b>Referenser:</b><br>
-[[15] Steve Sounders, "High Performance Web Sites" - Rule 6: Put Scripts at the Bottom](#prestanda)
+[[13] Steve Sounders, "High Performance Web Sites" - Rule 6: Put Scripts at the Bottom](#prestanda)
 
 
 ### #Inline kod
@@ -159,7 +159,7 @@ Filerna `admin.html` och `index.html` har css i inline.
 Enligt Steve Sounders ska man ska lägga dem i externa filer. Det sättet som vi har lärt oss att göra.
 
 <b>Referenser:</b><br>
-[[16] Steve Sounders, "High Performance Web Sites" - Rule 8: Make JavaScript and CSS External](#prestanda)
+[[14] Steve Sounders, "High Performance Web Sites" - Rule 8: Make JavaScript and CSS External](#prestanda)
 
 
 ### #Minifiera JavaScript
@@ -175,7 +175,7 @@ Liksam ha en minifierad version av dina JavaScript filer. Man kan ersätta jquer
 Man kan även minifiera CSS, men man tjänar oftast mindre än det man tjänar ifrån minifiering av JavaScript. Det man gör då är att kombinera identiska klasser, ta bort oanvända klasser, etc. Oftast ett svårt ämne att optimera pga hur CSS är strukturerat. Steve Sounders nämner att det bästa lösningen här är att ta bort kommentarer och "whitespace" och göra enkla optimeringar som att göra förkortningar som `#606` istället för `#660066` och ta bort onödiga stränger(`0` istället för `0px`).
 
 <b>Referenser:</b><br>
-[[17] Steve Sounders, "High Performance Web Sites" - Rule 10: Minify JavaScript](#prestanda)
+[[15] Steve Sounders, "High Performance Web Sites" - Rule 10: Minify JavaScript](#prestanda)
 
 
 ### #Annat
@@ -185,7 +185,7 @@ Ett par millisekunder går ju åt för detta och bör hanteras tycker jag.
 
 ***
 
-## Egna reflektioner
+## Egna övergripande reflektioner
 
 Mina reflektioner
 
@@ -194,37 +194,31 @@ Mina reflektioner
 ## Referenser
 
 #### #Säkerhet
-[1] John Häggerud, "Självstudier vecka 4" Linnéuniversitetet, november 2015 [Online] Tillgänglig: https://coursepress.lnu.se/kurs/webbteknik-ii/sjalvstudier-vecka-3/ [Hämtad: 25 november, 2015]
+[1] OWASP, "Top 10 2013 - A1 Injection", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A1-Injection [Hämtad: 25 november, 2015].
 
-[2] OWASP, "Top 10 2013 - A1 Injection" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A1-Injection [Hämtad: 25 november, 2015].
+[2] OWASP, "Top 10 2013 - A2 Broken Authentication and Session Management", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A2-Broken_Authentication_and_Session_Management [Hämtad: 26 november, 2015].
 
-[3] OWASP, "Top 10 2013 - A2 Broken Authentication and Session Management" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A2-Broken_Authentication_and_Session_Management [Hämtad: 26 november, 2015].
+[3] OWASP, "Top 10 2013 - A3 Cross-Site Scripting (XSS)", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS) [Hämtad: 27 november, 2015].
 
-[4] OWASP, "Top 10 2013 - A3 Cross-Site Scripting (XSS)" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS) [Hämtad: 27 november, 2015].
+[4] OWASP, "Top 10 2013 - A4 Insecure Direct Object References", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References [Hämtad: 30 november, 2015].
 
-[5] OWASP, "Top 10 2013 - A4 Insecure Direct Object References" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References [Hämtad: 30 november, 2015].
+[5] OWASP, "Top 10 2013 - A6 Sensitive Data Exposure", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A6-Sensitive_Data_Exposure [Hämtad: 25 november, 2015].
 
-[6] OWASP, "Top 10 2013 - A6 Sensitive Data Exposure" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A6-Sensitive_Data_Exposure [Hämtad: 25 november, 2015].
+[6] OWASP, "Top 10 2013 - A7 Missing Function Level Access Control", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A7-Missing_Function_Level_Access_Control [Hämtad: 30 november, 2015].
 
-[7] OWASP, "Top 10 2013 - A7 Missing Function Level Access Control" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A7-Missing_Function_Level_Access_Control [Hämtad: 30 november, 2015].
+[7] OWASP, "Top 10 2013 - A8 Cross-Site Request Forgery (CSRF)", *OWASP*, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A8-Cross-Site_Request_Forgery_(CSRF) [Hämtad: 30 november, 2015]
 
-[8] OWASP, "Top 10 2013 - A8 Cross-Site Request Forgery (CSRF)" OWASP, juni 2013 [Online] Tillgänglig: https://www.owasp.org/index.php/Top_10_2013-A8-Cross-Site_Request_Forgery_(CSRF) [Hämtad: 30 november, 2015]
-
-[9] OWASP "Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet" OWASP, november 2015 [Online] Tillgänglig: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet [Hämtad: 30 november, 2015]
+[8] OWASP "Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet", *OWASP*, november 2015 [Online] Tillgänglig: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet [Hämtad: 30 november, 2015]
 
 #### #Prestanda
-[10] John Häggerud, "Självstudier vecka 5" Linnéuniversitetet, november 2015 [Online] Tillgänglig: https://coursepress.lnu.se/kurs/webbteknik-ii/sjalvstudier-vecka-4/ [Hämtad: 30 november, 2015]
+[10] Steve Sounders, "High Performance Web Sites - Rule 3: Add an Expires Header", *O'Reilly*, september 2007
 
-[11] Steve Sounders, "High Performance Web Sites", O'Reilly, september 2007
+[11] Mark Nottingham, "Caching Tutorial", *MNOT*, maj 2013 [Online] Tillgänglig: https://www.mnot.net/cache_docs/ [Hämtad: 30 november, 2015]
 
-[12] Steve Sounders, "High Performance Web Sites" - Rule 3: Add an Expires Header, O'Reilly, september 2007, s. 22-28.
+[12] Kyle Young, "A Beginner's Guide to HTTP Cache Headers", *Mobify*, april 2013 [Online] Tillgänglig: http://www.mobify.com/blog/beginners-guide-to-http-cache-headers/ [Hämtad: 30 november, 2015]
 
-[13] Mark Nottingham, "Caching Tutorial" MNOT, maj 2013 [Online] Tillgänglig: https://www.mnot.net/cache_docs/ [Hämtad: 30 november, 2015]
+[13] Steve Sounders, "High Performance Web Sites - Rule 6: Put Scripts at the Bottom", *O'Reilly*, september 2007
 
-[14] Kyle Young, "A Beginner's Guide to HTTP Cache Headers, april 2013 [Online] Tillgänglig: http://www.mobify.com/blog/beginners-guide-to-http-cache-headers/ [Hämtad: 30 november, 2015]
+[14] Steve Sounders, "High Performance Web Sites - Rule 8: Make JavaScript and CSS External", *O'Reilly*, september 2007
 
-[15] Steve Sounders, "High Performance Web Sites" - Rule 6: Put Scripts at the Bottom, O'Reilly, september 2007, s. 45-50.
-
-[16] Steve Sounders, "High Performance Web Sites" - Rule 8: Make JavaScript and CSS External, O'Reilly, september 2007, s. 55-62.
-
-[17] Steve Sounders, "High Performance Web Sites" - Rule 10: Minify JavaScript, O'Reilly, september 2007, s. 69-75.
+[15] Steve Sounders, "High Performance Web Sites - Rule 10: Minify JavaScript", *O'Reilly*, september 2007
