@@ -187,7 +187,17 @@ Ett par millisekunder går ju åt för detta och bör hanteras tycker jag.
 
 ## Egna övergripande reflektioner
 
-Mina reflektioner
+Jag tycker att det saknas rätt- och felmeddelanden vid eventuellt fel vid inloggning, räcker inte bara med feedback för inloggningsuppgifter. Man undrar liksom varför inloggningen inte gick igenom, skrev man in fel uppgifter?
+
+Laddnings ikoner kanske?
+
+Logga ut knappen vid högra hörnet syns även om man är utloggad.
+
+Det fungerar även inte för mig att ta bort meddelanden som admin, ta bort meddelanden verkar inte vara klar.
+
+`MessageBoard.js` verkar inte vara helt klart/redo (förmodligen: beta), finns kommenterad kod, funktionen logout är kopplat till en addRemoveMarker och används inte och en del funktionalitet verkar vara påbörjad men inte fullständigt ännu.
+
+Första inloggninsuppgiter: `user@user.se` : `pass1user!`, fungerar inte för mig.
 
 ***
 
