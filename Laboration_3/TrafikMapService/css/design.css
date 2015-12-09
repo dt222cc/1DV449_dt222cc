@@ -1,0 +1,12 @@
+#container {
+	width: 1200;
+	margin: auto;
+	margin-top: 20;
+	line-height: 1.5;
+	}
+#my-list-container {
+	float: left;
+	}
+#my-list-container ul {
+	list-style: none;
+	}
