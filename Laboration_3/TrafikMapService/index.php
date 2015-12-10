@@ -6,10 +6,8 @@ require_once('MashupController.php');
 $v = new HTMLView();
 $c = new MashupController();
 
-$c->doMashup();
-$v->render();
+// Retrieve traffic from cache or directly from the WebService (SverigesRadio)
+$traffic = $c->getTraffic();
 
-
-//Note: Format messages
-//Note: Messages to View (List, filter)
-//Note: Work on maps (OpenStreetMap or GoogleMaps)
+// Render the OUTPUT
+$v->render($traffic);
