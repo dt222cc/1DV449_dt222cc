@@ -11,13 +11,20 @@ var TrafficApp = {
     },
 
     /**
-     * Reset view, should be self explained
+     * Reset view
      */
     addResetViewEvent: function() {
         $('#reset').on('click', function() {
+            // Set default location and zoom
             TrafficApp.map.setView([60, 15], 6);
-            $('#filter').val(4); // 4 = "Alla kategorier"
-            $(".leaflet-popup-close-button")[0].click();
+            // Set default select value. 4 = "Alla kategorier"
+            $('#filter').val(4);
+            // Only close the button if it exists
+            var closeButton = $(".leaflet-popup-close-button")[0];
+            if (closeButton != undefined) {
+                closeButton.click();
+            }
+            // Hide incident details
             $('.incident-details').hide();
         });
     },
