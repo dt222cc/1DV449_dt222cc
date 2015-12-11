@@ -1,7 +1,7 @@
 #container {
-	width: 1200;
+	/*width: 1200px;*/
 	margin: auto;
-	margin-top: 20;
+	padding: 50px;
 	line-height: 1.5;
 	}
 #my-list-container {
@@ -9,6 +9,12 @@
 	}
 #my-list-container ul {
 	list-style: none;
+	}
+#map {
+	float: right;
+	width: 800px;
+	height: 800px;
+	border: 1px solid black;
 	}
 .incident-details {
 	margin-top: 0;
