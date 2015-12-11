@@ -4,9 +4,22 @@ var TrafficApp = {
     incidents: [],
 
     init: function() {
+        TrafficApp.addResetViewEvent();
         TrafficApp.addHiddenIncidentDetails();
         TrafficApp.addTrafficMap();
         TrafficApp.addMarkers();
+    },
+
+    /**
+     * Reset view, should be self explained
+     */
+    addResetViewEvent: function() {
+        $('#reset').on('click', function() {
+            TrafficApp.map.setView([60, 15], 6);
+            $('#filter').val(4); // 4 = "Alla kategorier"
+            $(".leaflet-popup-close-button")[0].click();
+            $('.incident-details').hide();
+        });
     },
 
     /**
@@ -55,7 +68,7 @@ var TrafficApp = {
         var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
         var osm = new L.TileLayer(osmUrl, { minZoom: 5, maxZoom: 16, attribution: osmAttrib });
         // Start the map in Sweden
-        TrafficApp.map.setView(new L.LatLng(56.726, 14.513), 7);
+        TrafficApp.map.setView(new L.LatLng(60, 15), 6);
         TrafficApp.map.addLayer(osm);
     },
 

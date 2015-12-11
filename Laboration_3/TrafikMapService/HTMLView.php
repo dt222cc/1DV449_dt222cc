@@ -26,13 +26,16 @@ class HTMLView
             <body>
                 <div id='container'>
                     <div id='my-list-container'>
+                    <div>
+                        <button id='reset'>Återställ</button>
+                    </div>
                         Välj kategori:
                         <select id='filter'>
-                            <option value='0'>Alla kategorier</option>
-                            <option value='1'>Vägtrafik</option>
-                            <option value='2'>Kollektivtrafik</option>
-                            <option value='3'>Planerad störning</option>
-                            <option value='4'>Övrigt</option>
+                            <option value='4'>Alla kategorier</option>
+                            <option value='0'>Vägtrafik</option>
+                            <option value='1'>Kollektivtrafik</option>
+                            <option value='2'>Planerad störning</option>
+                            <option value='3'>Övrigt</option>
                         </select>
                         <ul id='list'>
                         " . $this->getTrafficList($traffic) . "</ul>
@@ -67,7 +70,7 @@ class HTMLView
             // These fields can be empty which messes up linebreaks
             $location = $this->getLocationHTML($t[self::$trafficLocation]);
             $description = $this->getDescriptionHTML($t[self::$trafficDescription]);
-            $category = $this->getCategoryHTML($t[self::$trafficCategory]); // No need probably, precaution
+            $category = $this->getCategoryHTML($t[self::$trafficCategory]);
 
             $string .= "<li>
                             <a class='incident' href='#'>$title</a>
