@@ -13,41 +13,41 @@ class HTMLView
     }
 
     public function render($traffic) {
-    echo "
-        <!DOCTYPE html>
-        <html lang='sv'>
-            <head>
-                <meta charset='UTF-8'>
-                <title>dt222cc - Laboration 3</title>
-                <link rel='stylesheet' href='css/design.css' />
-                <link rel='stylesheet' href='lib/leaflet.css' />
-            </head>
+        echo "
+<!DOCTYPE html>
+<html lang='sv'>
+    <head>
+        <meta charset='UTF-8'>
+        <title>dt222cc - Laboration 3</title>
+        <link rel='stylesheet' href='css/design.css' />
+        <link rel='stylesheet' href='lib/leaflet.css' />
+    </head>
 
-            <body>
-                <div id='container'>
-                    <div id='my-list-container'>
-                    <div>
-                        <button id='reset'>Återställ</button>
-                    </div>
-                        Välj kategori:
-                        <select id='filter'>
-                            <option value='4'>Alla kategorier</option>
-                            <option value='0'>Vägtrafik</option>
-                            <option value='1'>Kollektivtrafik</option>
-                            <option value='2'>Planerad störning</option>
-                            <option value='3'>Övrigt</option>
-                        </select>
-                        <ul id='list'>
-                        " . $this->getTrafficList($traffic) . "</ul>
-                    </div>
-                    <div id='map'></div>
-                </div>
-                <script src='lib/leaflet.js'></script>
-                <script src='lib/jquery-1.11.3.min.js'></script>
-                <script src='TrafficApp.js'></script>
-            </body>
-        </html>
-        ";
+    <body>
+        <div id='container'>
+            <div id='map'>
+            </div>
+            <div>
+                <button id='reset'>Återställ</button>
+            </div>
+            <div id='traffic-list-container'>
+                Välj kategori:
+                <select id='filter'>
+                    <option value='4'>Alla kategorier</option>
+                    <option value='0'>Vägtrafik</option>
+                    <option value='1'>Kollektivtrafik</option>
+                    <option value='2'>Planerad störning</option>
+                    <option value='3'>Övrigt</option>
+                </select>
+                <ul id='traffic-list'>". $this->getTrafficList($traffic) . "
+                </ul>
+            </div>
+        </div>
+        <script src='lib/leaflet.js'></script>
+        <script src='lib/jquery-1.11.3.min.js'></script>
+        <script src='TrafficApp.js'></script>
+    </body>
+</html>";
     }
 
     /**
@@ -72,16 +72,16 @@ class HTMLView
             $description = $this->getDescriptionHTML($t[self::$trafficDescription]);
             $category = $this->getCategoryHTML($t[self::$trafficCategory]);
 
-            $string .= "<li>
-                            <a class='incident' href='#'>$title</a>
-                            <p class='incident-details'>
-                                $date
-                                $location
-                                $description
-                                $category
-                            </p>
-                        </li>
-                        ";
+            $string .= "
+                    <li>
+                        <a class='incident' href='#'>$title</a>
+                        <p class='incident-details'>
+                            $category
+                            $date
+                            $location
+                            $description
+                        </p>
+                    </li>";
         }
 
         return $string;
@@ -98,16 +98,16 @@ class HTMLView
         $date = substr($date, 6, 10);
         $dateTime = new DateTime("@$date");
         $dateFormat = $dateTime->format('j F Y'); // ex: 11 December 2015. English or local, dunno
-        return "Datum: $dateFormat";
-    }
-
-    private function getLocationHTML($location) {
-        return trim($location) != "" ? "<br>Plats: $location" : ""; // If/Else Using Ternary Operators
-    }
-    private function getDescriptionHTML($description) {
-        return trim($description) != "" ? "<br>Beskrivning: $description" : "";
+        return "Datum: $dateFormat<br>";
     }
     private function getCategoryHTML($category) {
-        return trim($category) != "" ? "<br>Kategori: $category" : "";
+        return trim($category) != "" ? "Kategori: $category<br>" : "";
     }
+    private function getLocationHTML($location) {
+        return trim($location) != "" ? "Plats: $location<br>" : ""; // If/Else Using Ternary Operators
+    }
+    private function getDescriptionHTML($description) {
+        return trim($description) != "" ? "Beskrivning: $description" : "";
+    }
+
 }

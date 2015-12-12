@@ -122,7 +122,7 @@ var TrafficApp = {
         description = description != "" ? "<br><b>Beskrivning: </b>" + description : "";
 
         // Concatenate the strings into the popup text
-        var popupText = title + createddate + exactlocation + description + subcategory;
+        var popupText = title + subcategory + createddate + exactlocation + description;
 
         // Bind text to a popup
         marker.bindPopup(popupText);
