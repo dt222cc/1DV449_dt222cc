@@ -11,6 +11,6 @@ class MashupController
     }
 
     public function getTraffic() {
-        return $this->webService->getTrafficMessages();
+        $this->webService->getTrafficMessages();
     }
 }

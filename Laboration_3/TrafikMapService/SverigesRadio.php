@@ -12,32 +12,17 @@ class SverigesRadio
     public function getTrafficMessages() {
         $messages = array();
 
-        // Use the traffic information from cache or get some new traffic with a new request if the file is older than 'x' minutes
-        if (time() - filemtime(self::$filePath) < 60 * 30) {
-            echo "USING CACHE<br>";
-            $traffic = file_get_contents(self::$filePath);
-        }
-        else {
-            echo "NEW TRAFFIC<br>";
+        // Try to get some new traffic data if the cache is older than 'x' minutes
+        if (time() - filemtime(self::$filePath) > 60 * 30) {
             $traffic = $this->getTraffic();
 
-            // Create or update the file that contains the traffic information
+            // Create or update the traffic cache
             if ($traffic !== null) {
                 $cache = fopen(self::$filePath, 'w');
                 fwrite($cache, $traffic);
                 fclose($cache);
             }
-            // Use cache if no response from SverigesRadio
-            else {
-                echo "USING CACHE<br>";
-                $traffic = file_get_contents(self::$filePath);
-            }
         }
-
-        // Decode the JSON into an associative array
-        $traffic = json_decode($traffic, true);
-
-        return $traffic["messages"];
     }
 
     /**

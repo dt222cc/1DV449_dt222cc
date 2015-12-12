@@ -7,7 +7,7 @@ $v = new HTMLView();
 $c = new MashupController();
 
 // Retrieve traffic from cache or directly from the WebService (SverigesRadio)
-$traffic = $c->getTraffic();
+$c->getTraffic();
 
 // Render the OUTPUT
-$v->render($traffic);
+$v->render();
