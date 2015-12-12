@@ -12,6 +12,11 @@ class HTMLView
         date_default_timezone_set('Europe/Stockholm');
     }
 
+    /**
+     * Render the HTML
+     *
+     * @param array[] Traffic list
+     */
     public function render($traffic) {
         echo "
 <!DOCTYPE html>
@@ -33,13 +38,8 @@ class HTMLView
             <div id='traffic-list-container'>
                 Välj kategori:
                 <select id='filter'>
-                    <option value='4'>Alla kategorier</option>
-                    <option value='0'>Vägtrafik</option>
-                    <option value='1'>Kollektivtrafik</option>
-                    <option value='2'>Planerad störning</option>
-                    <option value='3'>Övrigt</option>
                 </select>
-                <ul id='traffic-list'>". $this->getTrafficList($traffic) . "
+                <ul id='traffic-list'>" . $this->getTrafficList($traffic) . "
                 </ul>
             </div>
         </div>
@@ -53,7 +53,7 @@ class HTMLView
     /**
      * Builds the traffic list with the traffic data
      *
-     * @param array(object)
+     * @param  array[]
      * @return string HTML
      */
     private function getTrafficList($traffic) {
@@ -90,10 +90,9 @@ class HTMLView
     /**
      * Helper methods for getTrafficView.
      *
-     * @param string
-     * @return string HTML | null
+     * @param   string
+     * @return  string HTML | null
      */
-
     private function getDateHTML($date) {
         $date = substr($date, 6, 10);
         $dateTime = new DateTime("@$date");
@@ -109,5 +108,4 @@ class HTMLView
     private function getDescriptionHTML($description) {
         return trim($description) != "" ? "Beskrivning: $description" : "";
     }
-
 }
