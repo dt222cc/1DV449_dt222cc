@@ -25,7 +25,7 @@ var TrafficApp = {
     },
 
     /**
-     * Populate the map
+     * Render/populate the map
      */
     renderTrafficMap: function() {
         // Initiate a new map
@@ -47,9 +47,7 @@ var TrafficApp = {
         var selectHTML = "";
 
         for (var i = 0; i < TrafficApp.categories.length; i++) {
-
             selectHTML += "<option value='" + i + "'>" + TrafficApp.categories[i] + "</option>";
-
         };
 
         $('#filter').append(selectHTML);
@@ -57,12 +55,11 @@ var TrafficApp = {
 
     /**
      * Retrieve traffic information from cache and start adding markers to the map
+     *
+     * @param array[]
      */
     renderMarkers: function(incidents) {
         incidents.forEach(function(incident) {
-            // Keep track of incidents so when clicking on incident title on the list, we can interact with the marker
-            // TrafficApp.incidents.push(incident);
-
             // Add markers
             var marker = new L.marker([incident.latitude, incident.longitude]);
 
@@ -109,10 +106,12 @@ var TrafficApp = {
     },
 
     /**
-     * Get traffic from cache and render that
+     * Render/populate the traffic list
+     *
+     * @param array[]
      */
-    renderTrafficList: function() {
-        // I'm going to conver the php code responsible for this
+    renderTrafficList: function(incidents) {
+        // I'm going to convert the php code responsible for this here
 
         // Hide the incident details after rendering the list
         $('.incident-details').hide();
@@ -120,6 +119,8 @@ var TrafficApp = {
 
     /**
      * Add functionality to hide/show incident details and view the incident on the map
+     *
+     * @param array[]
      */
     addClickEvents: function(incidents) {
         // Show incident details when clicking an incident title and interact with the map
@@ -154,7 +155,7 @@ var TrafficApp = {
             // Set default location and zoom
             TrafficApp.map.setView([60, 15], 6);
             // Set default select value. 4 = "Alla kategorier"
-            $('#filter').val(4);
+            $('#filter').val(0);
             // Only close the button if it exists
             var closeButton = $(".leaflet-popup-close-button")[0];
             if (closeButton != undefined) {
