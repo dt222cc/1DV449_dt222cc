@@ -15,6 +15,9 @@ var TrafficApp = {
         $.ajax('app_data/traffic-information.json')
         .done(function(json) {
             var incidents = json.messages;
+            // This part is needed for traffic list map/marker interaction to work
+            TrafficApp.incidents = incidents;
+
             // Render incident markers on the map
             TrafficApp.renderMarkers(incidents);
             // Render traffic list
@@ -59,8 +62,14 @@ var TrafficApp = {
      * @param array[]
      */
     renderMarkers: function(incidents) {
+        // Remove markers if exists (for filter to work)
+        TrafficApp.markers.forEach(function(marker){
+            TrafficApp.map.removeLayer(marker);
+        });
+
+        // Add markers (incidents have been filtered)
         incidents.forEach(function(incident) {
-            // Add markers
+            // Initiate a new marker with specified coordinates
             var marker = new L.marker([incident.latitude, incident.longitude]);
 
             // Parse and format the incident details
@@ -111,7 +120,33 @@ var TrafficApp = {
      * @param array[]
      */
     renderTrafficList: function(incidents) {
-        // I'm going to convert the php code responsible for this here
+        // Do the sorting, latest first
+        incidents.sort(function(a, b) {
+            // Turn strings into dates, and then subtract them to get a value that is either negative, positive, or zero
+            return new Date(TrafficApp.parseDate(b.createddate)) - new Date(TrafficApp.parseDate(a.createddate));
+        });
+
+        // Do the rendering (re-render list, for filter to work)
+        $("#traffic-list").empty();
+        // In case there's no incidents for the selected category
+        if (incidents === undefined || incidents.length === 0) {
+            $("#traffic-list").append("<p'>Det finns inga händelser för denna kategori.</p>");
+        } else {
+            incidents.forEach(function(incident) {
+                // + Category, Date
+                var incidentText = incident.subcategory.trim() + "<br>" + TrafficApp.parseDate(incident.createddate);
+
+                // These two fields can be empty, <br> tags inside these strings
+                var incidentLocation = incident.exactlocation != "" ? "<br>Plats: " + incident.exactlocation : "";
+                var incidentDescription = incident.description != "" ? "<br>Beskrivning: " + incident.description : "";
+
+                // + Location and description
+                incidentText += incidentLocation.trim() + incidentDescription.trim();
+
+                $("#traffic-list").append("<li><a class='incident' href='#'>" + incident.title +
+                    "</a><p class='incident-details'>" + incidentText + "</p></li>");
+            });
+        }
 
         // Hide the incident details after rendering the list
         $('.incident-details').hide();
@@ -151,7 +186,7 @@ var TrafficApp = {
         });
 
         // Reset view handler
-        $('#reset').on('click', function() {
+        $('#reset-btn').on('click', function() {
             // Set default location and zoom
             TrafficApp.map.setView([60, 15], 6);
             // Set default select value. 4 = "Alla kategorier"
@@ -164,6 +199,26 @@ var TrafficApp = {
             // Hide incident details
             $('.incident-details').hide();
         });
+
+        // Render new traffic list and markers when filter is changed
+        $('#filter').on('change', function() {
+            var filteredList = [];
+            var filter = $('#filter').val();
+
+            incidents.forEach(function(incident) {
+                // Keep incident if filter is set to "All".
+                if (filter === "0") {
+                    filteredList.push(incident);
+                }
+                // Only keep matching categories
+                else if (incident.category === filter - 1) {
+                    filteredList.push(incident);
+                }
+            });
+            // Re-render markers and traffic list
+            TrafficApp.renderMarkers(filteredList);
+            TrafficApp.renderTrafficList(filteredList);
+        });
     },
 
     /**
@@ -175,7 +230,6 @@ var TrafficApp = {
     parseDate: function(date) {
         // Remove "/Date()/" from the string
         date = date.substr(6, 18);
-
         // New date with custom format
         date = new Date(parseInt(date));
 
