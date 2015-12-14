@@ -13,7 +13,7 @@ class SverigesRadio
         $messages = array();
 
         // Try to get some new traffic data if the cache is older than 'x' minutes
-        if (time() - filemtime(self::$filePath) > 60 * 30) {
+        if (time() - filemtime(self::$filePath) > 60 * 15) {
             $traffic = $this->getTraffic();
 
             // Create or update the traffic cache
@@ -32,7 +32,7 @@ class SverigesRadio
      */
     private function getTraffic() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://api.sr.se/api/v2/traffic/messages?format=json');
+        curl_setopt($ch, CURLOPT_URL, 'http://api.sr.se/api/v2/traffic/messages?pagination=false&format=json');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         $data = curl_exec($ch);

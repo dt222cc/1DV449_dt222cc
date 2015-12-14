@@ -1,18 +1,52 @@
+html, body, main, #container, #map, #traffic-list {
+    height: 100%;
+}
 #container {
     margin: auto;
-    padding: 50px;
-    line-height: 1.5;
-    }
+    padding: 10px;
+}
 #map {
     float: left;
-    width: 800px;
-    height: 800px;
-    margin-right: 20px;
-    margin-bottom: 20px;
-    }
+    width: 50%;
+    border: 1px solid blue;
+}
+#traffic-header p {
+    margin-bottom: 5px;
+}
 #traffic-list {
+    float: right;
+    width: 48%;
+}
+#traffic-ul {
+    padding: 0;
+    margin: 0;
     list-style: none;
-    }
+    height: 76%;
+    overflow: scroll
+}
+#reset-btn {
+    width: 140px;
+    margin-bottom: 10px;
+}
+#filter {
+    margin: 6px 0px 6px 0px;
+}
+.incident, #traffic-header p, .incident-details {
+    padding-left: 10px;
+}
 .incident-details {
-    margin-top: 0;
-    }
+    margin-top: 5px;
+    background-color: #e5faff;
+}
+.category0 {
+    border-left: 3px solid blue;
+}
+.category1 {
+    border-left: 3px solid orange;
+}
+.category2 {
+    border-left: 3px solid green;
+}
+.category3 {
+    border-left: 3px solid purple;
+}

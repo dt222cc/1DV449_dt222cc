@@ -20,8 +20,9 @@ class HTMLView
     <head>
         <meta charset='UTF-8'>
         <title>dt222cc - Laboration 3</title>
-        <link rel='stylesheet' href='css/design.css' />
         <link rel='stylesheet' href='lib/leaflet.css' />
+        <link rel='stylesheet' href='lib/bootstrap.min.css' />
+        <link rel='stylesheet' href='css/design.css' />
     </head>
 
     <body>
@@ -30,20 +31,19 @@ class HTMLView
           <style>div { display:none; } </style>
         </noscript>
         <div id='container'>
-            <div id='map'>
-            </div>
-            <div>
-                <p>Trafik händelser hämtade den $fileDate</p>
-            </div>
-            <div>
-                <button id='reset-btn'>Återställ</button>
-            </div>
-            <div id='traffic-list-container'>
-                Välj kategori:
-                <select id='filter'>
-                </select>
-                <ul id='traffic-list'>
+            <div id='traffic-list'>
+                <div id='traffic-header'>
+                    <button id='reset-btn' class='btn btn-lg btn-primary'>Återställ</button>
+                    <div id='filter-desc'>
+                    </div>
+                    <select id='filter'>
+                    </select>
+                    <p>Trafikhändelserna hämtades den $fileDate<br>Händelserna är sorterade efter datum, nyaste först.<br>Nästa hämtning sker som tidigast 15 min efter den senaste hämtningen.</p>
+                </div>
+                <ul id='traffic-ul'>
                 </ul>
+            </div>
+            <div id='map'>
             </div>
         </div>
         <script src='lib/leaflet.js'></script>

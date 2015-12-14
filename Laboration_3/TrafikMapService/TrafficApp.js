@@ -3,7 +3,7 @@ var TrafficApp = {
     incidents: [],
     markers: [],
     categories: [ "Alla kategorier", "Vägtrafik", "Kollektivtrafik", "Planerad störning", "Övrigt" ],
-    months: [ "Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December" ],
+    months: [ "Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec" ],
 
     init: function() {
         // Add the map
@@ -44,15 +44,20 @@ var TrafficApp = {
     },
 
     /**
-     * Render/populate the select dropdown with categories
+     * Render/populate the select input with categories and a filter description regarding color (css)
      */
     populateCategoryFilter: function() {
         var selectHTML = "";
+        var filterDesc = "";
 
         for (var i = 0; i < TrafficApp.categories.length; i++) {
             selectHTML += "<option value='" + i + "'>" + TrafficApp.categories[i] + "</option>";
+            if (i < TrafficApp.categories.length - 1) {
+                filterDesc += "<p class='category" + i + "'>" + TrafficApp.categories[i + 1] + "</p>";
+            }
         };
 
+        $('#filter-desc').append(filterDesc);
         $('#filter').append(selectHTML);
     },
 
@@ -86,7 +91,7 @@ var TrafficApp = {
             description = description != "" ? "<br><b>Beskrivning: </b>" + description : "";
 
             // Concatenate the strings into the popup text
-            var popupText = title + subcategory + createddate + exactlocation + description;
+            var popupText = title + createddate + subcategory + exactlocation + description;
 
             // Bind text to a popup
             marker.bindPopup(popupText);
@@ -101,7 +106,6 @@ var TrafficApp = {
                 var popupTitle = e.target._popup._content.split("<br>")[0].split("</b>")[1];
                 $('.incident').each(function(index, incident) {
                     if (incident.text === popupTitle) {
-
                         // Hide previous incident details
                         $('.incident-details').hide();
                         $(this).next().slideDown('fast');
@@ -127,23 +131,23 @@ var TrafficApp = {
         });
 
         // Do the rendering (re-render list, for filter to work)
-        $("#traffic-list").empty();
+        $("#traffic-ul").empty();
         // In case there's no incidents for the selected category
         if (incidents === undefined || incidents.length === 0) {
-            $("#traffic-list").append("<p'>Det finns inga händelser för denna kategori.</p>");
+            $("#traffic-ul").append("<p'>Det finns inga händelser för denna kategori.</p>");
         } else {
             incidents.forEach(function(incident) {
-                // + Category, Date
-                var incidentText = incident.subcategory.trim() + "<br>" + TrafficApp.parseDate(incident.createddate);
+
+                var date = "Datum: " + TrafficApp.parseDate(incident.createddate);
+                var category = "<br>Händelse: " + incident.subcategory.trim();
 
                 // These two fields can be empty, <br> tags inside these strings
-                var incidentLocation = incident.exactlocation != "" ? "<br>Plats: " + incident.exactlocation : "";
-                var incidentDescription = incident.description != "" ? "<br>Beskrivning: " + incident.description : "";
+                var location = incident.exactlocation != "" ? "<br>Plats: " + incident.exactlocation.trim() : "";
+                var description = incident.description != "" ? "<br>Beskrivning: " + incident.description.trim() : "";
 
-                // + Location and description
-                incidentText += incidentLocation.trim() + incidentDescription.trim();
+                var incidentText = date + category + location + description;
 
-                $("#traffic-list").append("<li><a class='incident' href='#'>" + incident.title +
+                $("#traffic-ul").append("<li><a class='incident category" + incident.category + "' href='#'>" + incident.title +
                     "</a><p class='incident-details'>" + incidentText + "</p></li>");
             });
         }
@@ -168,6 +172,7 @@ var TrafficApp = {
             var latitude;
             var longitude;
             var title = $(this).html();
+            console.log(title);
             incidents.forEach(function(incident) {
                 if (incident.title === title) {
                     latitude = incident.latitude;
@@ -218,6 +223,8 @@ var TrafficApp = {
             // Re-render markers and traffic list
             TrafficApp.renderMarkers(filteredList);
             TrafficApp.renderTrafficList(filteredList);
+            // Re-apply events (So we can click on list again)
+            TrafficApp.addClickEvents(incidents);
         });
     },
 
@@ -233,7 +240,18 @@ var TrafficApp = {
         // New date with custom format
         date = new Date(parseInt(date));
 
-        return date.getDate() + " " + TrafficApp.months[date.getMonth()] + " " + date.getFullYear();
+        return date.getDate() + " " + TrafficApp.months[date.getMonth()] + " " + date.getFullYear() + " " +
+            TrafficApp.addZeroBefore(date.getHours()) + ":" + TrafficApp.addZeroBefore(date.getMinutes());
+    },
+
+    /**
+     * Make sure the number has two digits
+     *
+     * @param string // or is it int?
+     * @return string
+     */
+    addZeroBefore: function(n) {
+        return (n < 10 ? '0' : '') + n;
     },
 }
 
