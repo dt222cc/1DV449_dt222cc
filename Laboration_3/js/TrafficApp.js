@@ -2,7 +2,7 @@
 
 var TrafficApp = {
     trafficURL: "http://api.sr.se/api/v2/traffic/messages?pagination=false&format=json",
-    fileMaxTime: 15, // minutes
+    fileMaxTime: 10, // minutes
     map: {},
     incidents: [],
     markers: [],
