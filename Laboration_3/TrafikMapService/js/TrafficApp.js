@@ -1,4 +1,8 @@
+'use strict';
+
 var TrafficApp = {
+    trafficURL: "http://api.sr.se/api/v2/traffic/messages?pagination=false&format=json",
+    fileMaxTime: 15, // minutes
     map: {},
     incidents: [],
     markers: [],
@@ -10,21 +14,91 @@ var TrafficApp = {
         TrafficApp.renderTrafficMap();
         // Populate the filter list
         TrafficApp.populateCategoryFilter();
+        // Get traffic from cache or webservice and renders that
+        TrafficApp.getTrafficMessages();
+    },
 
-        // Get traffic from cache and...
-        $.ajax('app_data/traffic-information.json')
-        .done(function(json) {
-            var incidents = json.messages;
-            // This part is needed for traffic list map/marker interaction to work
-            TrafficApp.incidents = incidents;
+    /**
+     * Get traffic messages from cache or webservice. Then render the traffic
+     * A bit DRY because of "onreadestatechange", not sure how to prevent that.
+     */
+    getTrafficMessages: function() {
+        var incidents;
+        var timestamp;
 
-            // Render incident markers on the map
-            TrafficApp.renderMarkers(incidents);
-            // Render traffic list
-            TrafficApp.renderTrafficList(incidents);
-            // Add some click events
-            TrafficApp.addClickEvents(incidents);
-        });
+        // Use local storage if traffic is still fresh
+        if (TrafficApp.isTrafficFresh() === true) {
+            timestamp = JSON.parse(localStorage.getItem('traffic-expire')).timestamp;
+            incidents = JSON.parse(localStorage.getItem('traffic'));
+            TrafficApp.renderTraffic(incidents, timestamp);
+        } else {
+            var response;
+            var xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        response = JSON.parse(xhr.responseText);
+                        incidents = response.messages;
+
+                        // Timestamp to be able to check file time
+                        timestamp = new Date().getTime();
+                        var storageTime = { timestamp: timestamp };
+
+                        // Set localstorage, two items
+                        localStorage.setItem('traffic', JSON.stringify(incidents));
+                        localStorage.setItem("traffic-expire", JSON.stringify(storageTime));
+
+                    } else {
+                        // Use localstorage if webservice is down
+                        console.log("An error occurred while retrieving new traffic, using traffic from cache.");
+                        incidents = JSON.parse(localStorage.getItem('traffic'));
+                    }
+
+                    TrafficApp.renderTraffic(incidents, timestamp);
+                }
+            };
+            xhr.open("GET", TrafficApp.trafficURL, true);
+            xhr.send(null);
+        }
+    },
+
+    /**
+     * Checks if "cache" exists and if it's still fresh
+     *
+     * @returns {boolean}
+     */
+    isTrafficFresh: function() {
+        var trafficStorage = localStorage.getItem('traffic');
+        var trafficExpire = localStorage.getItem('traffic-expire');
+
+        // Does file exists
+        if (trafficStorage !== null && trafficExpire !== null) {
+            var dateOfFile = JSON.parse(trafficExpire).timestamp;
+            var dateOfToday = new Date().getTime();
+
+            // Is file still fresh
+            if (dateOfToday - dateOfFile < TrafficApp.fileMaxTime * 1000 * 60) {
+                console.log("Still fresh");
+                return true;
+            }
+        }
+        console.log("Not fresh");
+        return false;
+    },
+
+    renderTraffic: function(incidents, timestamp) {
+        // Render incident markers on the map
+        TrafficApp.renderMarkers(incidents);
+        // Render traffic list
+        TrafficApp.renderTrafficList(incidents);
+        // Add some click events
+        TrafficApp.addClickEvents(incidents);
+
+        var collectionDate = TrafficApp.parseDate(timestamp);
+        $('#traffic-header').append("<p>Trafikhändelserna hämtades den " + collectionDate +
+            "<br>Händelserna är sorterade efter datum, nyaste först.<br>Nästa hämtning sker som tidigast " +
+            TrafficApp.fileMaxTime + " min efter den senaste hämtningen.</p>");
     },
 
     /**
@@ -33,7 +107,6 @@ var TrafficApp = {
     renderTrafficMap: function() {
         // Initiate a new map
         TrafficApp.map = new L.Map('map');
-
         // Create the tile layer with correct attribution
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
@@ -44,27 +117,9 @@ var TrafficApp = {
     },
 
     /**
-     * Render/populate the select input with categories and a filter description regarding color (css)
-     */
-    populateCategoryFilter: function() {
-        var selectHTML = "";
-        var filterDesc = "";
-
-        for (var i = 0; i < TrafficApp.categories.length; i++) {
-            selectHTML += "<option value='" + i + "'>" + TrafficApp.categories[i] + "</option>";
-            if (i < TrafficApp.categories.length - 1) {
-                filterDesc += "<p class='category" + i + "'>" + TrafficApp.categories[i + 1] + "</p>";
-            }
-        };
-
-        $('#filter-desc').append(filterDesc);
-        $('#filter').append(selectHTML);
-    },
-
-    /**
      * Retrieve traffic information from cache and start adding markers to the map
      *
-     * @param array[]
+     * @param incidents
      */
     renderMarkers: function(incidents) {
         // Remove markers if exists (for filter to work)
@@ -75,23 +130,21 @@ var TrafficApp = {
         // Add markers (incidents have been filtered)
         incidents.forEach(function(incident) {
             // Initiate a new marker with specified coordinates
-            var marker = new L.marker([incident.latitude, incident.longitude]);
+            var marker = new L.Marker([incident.latitude, incident.longitude]);
 
             // Parse and format the incident details
-            var title = "<b>Titel: </b>" + incident.title.trim();
-            var subcategory = "<br><b>Kategori: </b> " + incident.subcategory.trim();
+            var title = "<b>Titel: </b>" + incident.title;
+            var subcategory = "<br><b>Kategori: </b> " + incident.subcategory;
 
             // Format date
-            var createddate = "<br><b>Datum: </b>" + TrafficApp.parseDate(incident.createddate.trim());
+            var createdDate = "<br><b>Datum: </b>" + TrafficApp.parseDate(incident.createddate);
 
             // These two fields can be empty
-            var exactlocation = incident.exactlocation.trim();
-            exactlocation = incident.exactlocation.trim() != "" ? "<br><b>Plats: </b>" + exactlocation : "";
-            var description = incident.description.trim();
-            description = description != "" ? "<br><b>Beskrivning: </b>" + description : "";
+            var exactLocation = incident.exactlocation != "" ? "<br><b>Plats: </b>" + incident.exactlocation : "";
+            var description = incident.description != "" ? "<br><b>Beskrivning: </b>" + incident.description : "";
 
             // Concatenate the strings into the popup text
-            var popupText = title + createddate + subcategory + exactlocation + description;
+            var popupText = title + createdDate + subcategory + exactLocation + description;
 
             // Bind text to a popup
             marker.bindPopup(popupText);
@@ -121,7 +174,7 @@ var TrafficApp = {
     /**
      * Render/populate the traffic list
      *
-     * @param array[]
+     * @param incidents
      */
     renderTrafficList: function(incidents) {
         // Do the sorting, latest first
@@ -130,24 +183,24 @@ var TrafficApp = {
             return new Date(TrafficApp.parseDate(b.createddate)) - new Date(TrafficApp.parseDate(a.createddate));
         });
 
-        // Do the rendering (re-render list, for filter to work)
-        $("#traffic-ul").empty();
+        var trafficUL = $("#traffic-ul");
+        // Re-render list, for filter to work)
+        trafficUL.empty();
         // In case there's no incidents for the selected category
         if (incidents === undefined || incidents.length === 0) {
-            $("#traffic-ul").append("<p'>Det finns inga händelser för denna kategori.</p>");
+            trafficUL.append("<p'>Det finns inga händelser för denna kategori.</p>");
         } else {
             incidents.forEach(function(incident) {
-
                 var date = "Datum: " + TrafficApp.parseDate(incident.createddate);
-                var category = "<br>Händelse: " + incident.subcategory.trim();
+                var category = "<br>Händelse: " + incident.subcategory;
 
                 // These two fields can be empty, <br> tags inside these strings
-                var location = incident.exactlocation != "" ? "<br>Plats: " + incident.exactlocation.trim() : "";
-                var description = incident.description != "" ? "<br>Beskrivning: " + incident.description.trim() : "";
+                var location = incident.exactlocation != "" ? "<br>Plats: " + incident.exactlocation : "";
+                var description = incident.description != "" ? "<br>Beskrivning: " + incident.description : "";
 
                 var incidentText = date + category + location + description;
 
-                $("#traffic-ul").append("<li><a class='incident category" + incident.category + "' href='#'>" + incident.title +
+                trafficUL.append("<li><a class='incident category" + incident.category + "' href='#'>" + incident.title +
                     "</a><p class='incident-details'>" + incidentText + "</p></li>");
             });
         }
@@ -159,7 +212,7 @@ var TrafficApp = {
     /**
      * Add functionality to hide/show incident details and view the incident on the map
      *
-     * @param array[]
+     * @param incidents
      */
     addClickEvents: function(incidents) {
         // Show incident details when clicking an incident title and interact with the map
@@ -172,7 +225,7 @@ var TrafficApp = {
             var latitude;
             var longitude;
             var title = $(this).html();
-            console.log(title);
+
             incidents.forEach(function(incident) {
                 if (incident.title === title) {
                     latitude = incident.latitude;
@@ -229,16 +282,41 @@ var TrafficApp = {
     },
 
     /**
+     * Render/populate the select input with categories and a filter description regarding color (css)
+     */
+    populateCategoryFilter: function() {
+        var selectHTML = "";
+        var filterDesc = "";
+        // Select option
+        for (var i = 0; i < TrafficApp.categories.length; i++) {
+            selectHTML += "<option value='" + i + "'>" + TrafficApp.categories[i] + "</option>";
+            // Description
+            if (i < TrafficApp.categories.length - 1) {
+                filterDesc += "<p class='category" + i + "'>" + TrafficApp.categories[i + 1] + "</p>";
+            }
+        }
+
+        $('#filter-desc').append(filterDesc);
+        $('#filter').append(selectHTML);
+    },
+
+    /**
      * Format date
      *
-     * @param string "/Date(1449809907837+0100)/""
      * @return string "11 Dec 2015"
+     * @param date
      */
     parseDate: function(date) {
-        // Remove "/Date()/" from the string
-        date = date.substr(6, 18);
-        // New date with custom format
-        date = new Date(parseInt(date));
+        // For traffic collection date
+        if (date.toString().length === 13) {
+            date = new Date(date);
+        }
+        // For traffic incidents
+        else {
+            // Remove "/Date()/" from the string
+            date = date.substr(6, 18);
+            date = new Date(parseInt(date));
+        }
 
         return date.getDate() + " " + TrafficApp.months[date.getMonth()] + " " + date.getFullYear() + " " +
             TrafficApp.addZeroBefore(date.getHours()) + ":" + TrafficApp.addZeroBefore(date.getMinutes());
@@ -247,12 +325,12 @@ var TrafficApp = {
     /**
      * Make sure the number has two digits
      *
-     * @param string // or is it int?
      * @return string
+     * @param n
      */
     addZeroBefore: function(n) {
         return (n < 10 ? '0' : '') + n;
-    },
-}
+    }
+};
 
 window.onload = new TrafficApp.init();

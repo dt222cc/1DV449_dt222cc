@@ -11,7 +11,7 @@ html, body, main, #container, #map, #traffic-list {
     border: 1px solid blue;
 }
 #traffic-header p {
-    margin-bottom: 5px;
+     margin-bottom: 5px;
 }
 #traffic-list {
     float: right;
@@ -21,15 +21,15 @@ html, body, main, #container, #map, #traffic-list {
     padding: 0;
     margin: 0;
     list-style: none;
-    height: 76%;
-    overflow: scroll
+    overflow-y: scroll;
+    height: 70%;
 }
 #reset-btn {
     width: 140px;
     margin-bottom: 10px;
 }
 #filter {
-    margin: 6px 0px 6px 0px;
+    margin: 6px 0 6px 0;
 }
 .incident, #traffic-header p, .incident-details {
     padding-left: 10px;
