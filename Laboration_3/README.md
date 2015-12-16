@@ -37,3 +37,34 @@ CSS där uppe och JS där nere och minifierade.
 Inga sidomladningar krävs förutom när användaren vill uppdatera traffiken, isåfall krävs ett uppdatering.
 
 Jag cachar bara data från Sveriges Radio. Cachning av .css, .js och bilder skulle var en optimering men jag satsade inte på det. Jag tar det på projektet istället.
+
+
+## Komplettering
+
+#### CSRF (Cross-site request forgery)
+
+Även kallad "one-click attack", "session riding" eller "sea-surf" (lol).
+
+Till skillnad från XSS som utnyttjar det förtroende en användare har för en viss webbplats, utnyttjar CSRF det förtroende som en webbplats har i en användares webbläsare.
+
+En attackerare lurar en offer att göra procedurer som offret är auktoriserad att göra, t.ex att offret besöker en sida som är "sårbar" och där attackeraren har skadlig kod inlagd (vilket gör att offret tvingas göra eventuella procedurer som attackeraren ville utföra).
+
+Detta kan vara uppdatering av kontouppgifter, göra inköp, utloggning/inloggning.
+
+Användaren ville inte göra denna ändring, eller vad det nu var. Webbplatsen där ändringen skedde ser det som att det var denna person som gjorde denna ändring. Saker och ting sker utan att användaren har någon aning om vad det är som har hänt (beroende på vad det är för attack), usch.
+
+#### Hashning vs. kryptering
+
+När man krypterar en sträng som t.ex ett lösenord, tillämpar man någon form av algoritm som förvränger den. **Tillämpnar man en nyckeln, avkodas den**. En simpel exempel är då att med en simpel algoritm byter ut alla bokstäver/siffror med ett steg upp, att alla "a" blir "b" och alla "3" blir "4" osv. Nycklen blir då, att gå ned ett steg för att avkoda den.
+
+Poängen med kryptering är att krypterade data är **reversibel**. Använd kryptering när man vill **ha tillbaka indatat**, ett exempel kan vara ett meddelande som man inte vill ha i klar text, applicera en kryptering och förvara nycklen så säkert som möjligt och använd den för att avkoda den, krypterade meddelanden.  
+
+***
+
+Hashning skiljer sig från kryptering i att när data kodas, **är det extremt svårt att avkoda det**.
+
+Man använd hashning när man vill kontrollera giltigheten av indata, **när man vill jämföra ett värde men kan inte lagra det i klar text** (som t.ex **lösenord**, finns andra former av tillämpningar).
+
+Liksom man jämför inte sitt lösenord med ett sparat lösenord, utan man jämför resultatet av hashningen av sitt lösenord med ett sparat resultat av samma lösenord.
+
+Som jag nämde tidigare så är det extremt svårt att avkoda en hashning, men om man använder vanliga ord i t.ex lösenordet så blir det lättare eller "mindre svårare" att avkoda det, för att undvika detta finns det något som kallas för **Salting**. Detta är något som man lägger till på hashningen för att ge extra "ummpf" (skydd) för dem med vanliga lösenord.
