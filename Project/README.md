@@ -1,13 +1,25 @@
-## Reseplanerare + Vädret
-
-- Sing Trinh - dt222cc - WP14
-- Demo: 
-- Kurshemsida: https://coursepress.lnu.se/kurs/webbteknik-ii/projektbeskrivning/
+## Reseplanerare med väder prognos
+- <b>Sing Trinh</b> (dt222cc - WP14)
+- <b>Demo:</b>
+- <b>Kurshemsida:</b> https://coursepress.lnu.se/kurs/webbteknik-ii/projektbeskrivning/
 
 ## Projektbeskrivning
+En mashup applikation med <b>"GeoNames"</b> för koordinater för platssökning, <b>"ResRobot - Reseplanerare"</b> för tågtider och <b>"YR(yr.no)"</b> för väder prognoser.
 
-Jag hade tänkt att skapa en mashup applikation med "ResRobot - Reseplanerare" och ett väder API, eventuellt flera API:er kan behövas.
+En mashup applikation där en användare matar in avgångsplats, destination, datum & tid som en vanlig reseplanerare. Information om tillgängliga tider visas i en tabell och vädret angående avgång och avstigning presenteras.
 
-Tanken är då att en användare matar in sin plats, destination, datum & tid som en vanlig reseplanerare. Information om tillgängliga tider visas i en tabell och vädret angående avgång och avstigning presenteras, det det regnar kanske eller kanske att solen är nere vid ankomst. Länk till var man kan köpa biljetten erfodras, ifylld om möjligt.
+#### Extra "möjliga" funktionalitet
+- Länk till var man kan köpa biljetten erfodras i form av länk, ifylld om möjligt.
+- Tidigare sökningar sparas och kan tas bort.
+- Biljett priser om jag får det att fungera.
 
-Tidigare sökningar sparas och kan tas bort. Kanske pris om jag får det att fungera. Ett "bonus" om jag har tid, sms angående detaljer som tider, tåg/buss- id.
+## Tekniker
+- <b>API, Webservices</b>
+ - <b>"GeoNames"</b> för koordinater för platssökning.
+ - <b>"ResRobot - Reseplanerare"</b> för tågtider.
+ - <b>"YR(yr.no)"</b> för väder prognoser.
+- <b>PHP</b>
+- <b>JavaScript</b>
+- <b>Cache</b>
+- <b>MySQL</b>
+- <b>Offline</b>

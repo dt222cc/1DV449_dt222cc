@@ -1,0 +1,7 @@
+html, body, main, #container {
+    height: 100%;
+}
+#container {
+    margin: auto;
+    padding: 10px;
+}
