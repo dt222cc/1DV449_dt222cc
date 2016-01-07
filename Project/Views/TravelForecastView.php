@@ -34,9 +34,26 @@ class TravelForecastView
      *
      * @return mixed
      */
-    public function getLocationName()
+    public function getOrigin()
     {
-        return $this->getTravelByDeparture() ? $this->getOrigin() : $this->getDestination();
+        if (isset($_GET['O'])) {
+            $a = array("å", "ä", "ö");
+            $b = array("a", "a", "o");
+            $c = str_replace($a, $b, strtolower(trim($_GET['O'])));
+            return $c;
+        }
+        return "";
+    }
+
+    public function getDestination()
+    {
+        if (isset($_GET['Z'])) {
+            $a = array("å", "ä", "ö");
+            $b = array("a", "a", "o");
+            $c = str_replace($a, $b, strtolower(trim($_GET['Z'])));
+            return $c;
+        }
+        return "";
     }
     public function getTravelDate()
     {
@@ -290,14 +307,6 @@ class TravelForecastView
      *
      * @return string
      */
-    private function getOrigin()
-    {
-        return isset($_GET['O']) ? trim($_GET['O']) : "";
-    }
-    private function getDestination()
-    {
-        return isset($_GET['Z']) ? trim($_GET['Z']) : "";
-    }
     private function getDay()
     {
         return isset($_GET['d']) ? trim($_GET['d']) : "";
