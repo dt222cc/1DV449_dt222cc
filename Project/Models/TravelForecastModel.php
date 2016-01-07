@@ -25,7 +25,7 @@ class TravelForecastModel
         // ...or get from the existing cache (server cache)
         else {
             var_dump("Using existing cache</br></br>");
-            $locations = $this->getFromCache(self::$locationsFilename);//->locations;
+            $locations = json_decode(file_get_contents(self::$locationsFilename));
             // ...check if location exists in cache
             foreach ($locations->locations as $location) {
                 if ($location->name === $locationName) {
@@ -70,15 +70,14 @@ class TravelForecastModel
     private function getLocationFromWebservice($locationName)
     {
         // Establish connection, get json/xml
-        // $data = $this->getCurlRequest("http://api.geonames.org/searchJSON?q=$locationName&maxRows=1&fcode=RSTN&username=".Settings::USERNAME);
-        $data = $this->getCurlRequest("http://api.geonames.org/searchJSON?q=$locationName&maxRows=1&fcode=RSTN&username=demo");
-
+        $data = $this->getCurlRequest("http://api.geonames.org/searchJSON?q=$locationName&maxRows=1&fcode=RSTN&username=".Settings::USERNAME);
         //Throw exception if connection failed on no search results
         if ( $data === "" || $data === null || json_decode($data)->totalResultsCount === 0) {
-            // Failed connection
-            throw new exception(); // Reminder: Add custom execeptions
-        } else {
-            // Parse json to associative array and then simplified
+            // throw new exception(); // Reminder: Add custom execeptions
+        }
+        // Connection and the response passed
+        else {
+            // Parse json to associative array and simplify
             $data = json_decode($data);
             $location = array(
                 'toponymName' => $data->geonames[0]->toponymName,
@@ -87,7 +86,7 @@ class TravelForecastModel
                 'lng' => $data->geonames[0]->lng
                 );
 
-            // Save to db/cache
+            // Save to cache
             $this->saveToCache($location, self::$locationsFilename);
         }
 
@@ -106,9 +105,8 @@ class TravelForecastModel
         // https://api.resrobot.se/trip.<FORMAT>?key=<DIN NYCKEL>&Parametrar
         // https://api.resrobot.se/trip.xml?key=<DIN NYCKEL>&originId=7400001&destId=7400002
 
-        // Parse to json
+        // Parse json
 
-        // Save to db/cache
         $this->saveToCache($data, self::$traintimesFilename);
 
         return $data;
@@ -122,9 +120,8 @@ class TravelForecastModel
     {
         $data = $this->getCurlRequest("http://api.yr.no/weatherapi/locationforecast/1.9/?lat=$lat;lon=$lng");
 
-        // Parse to json from xml
+        // Parse xml
 
-        // Save to db/cache
         $this->saveToCache($data, self::$forecastsFilename);
 
         return $data;
@@ -151,9 +148,7 @@ class TravelForecastModel
             var_dump("FORECASTS");
         }
 
-        $cache = fopen($fileName, 'w');
-        fwrite($cache, json_encode($cacheContents));
-        fclose($cache);
+        file_put_contents($fileName, json_encode($cacheContents));
     }
 
     /**
@@ -164,35 +159,17 @@ class TravelForecastModel
     private function initialCacheSetup($cacheFilename)
     {
         if (file_exists(self::$locationsFilename) === false && $cacheFilename === self::$locationsFilename) {
-            $entry = array('locations' => array());
-            $cache = fopen(self::$locationsFilename, 'w');
-            fwrite($cache, json_encode($entry));
-            fclose($cache);
+            $temp_array = array('locations' => array());
+            file_put_contents(self::$locationsFilename, json_encode($temp_array));
         }
         if (file_exists(self::$traintimesFilename) === false && $cacheFilename === self::$traintimesFilename) {
-            $entry = array('traintimes' => array());
-            $cache = fopen(self::$traintimesFilename, 'w');
-            fwrite($cache, json_encode($entry));
-            fclose($cache);
+            $temp_array = array('traintimes' => array());
+            file_put_contents(self::$traintimesFilename, json_encode($temp_array));
         }
         if (file_exists(self::$forecastsFilename) === false && $cacheFilename === self::$forecastsFilename) {
-            $entry = array('forecasts' => array());
-            $cache = fopen(self::$forecastsFilename, 'w');
-            fwrite($cache, json_encode($entry));
-            fclose($cache);
+            $temp_array = array('forecasts' => array());
+            file_put_contents(self::$forecastsFilename, json_encode($temp_array));
         }
-    }
-
-    /**
-     * @param string
-     * @return array
-     */
-    private function getFromCache($fileName)
-    {
-        $cache = fopen($fileName, 'r');
-        $data = fread($cache, filesize($fileName));
-        fclose($cache);
-        return json_decode($data);
     }
 
     /**
