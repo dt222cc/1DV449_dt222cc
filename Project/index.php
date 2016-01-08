@@ -25,3 +25,19 @@ $c->doTravelForecastService();
 // GENERATE THE OUTPUT...
 $lv = new LayoutView();
 $lv->render($v);
+
+
+// Trying to pass localstorage values to php, no success so far
+echo "<br><pre>";
+
+$dataObject = $_POST;
+$dataObject2 = $_GET;
+$dataObject3 = $_POST["data"];
+$dataObject4 = $_GET["data"];
+
+var_dump($dataObject);
+var_dump($dataObject2);
+var_dump($dataObject3);
+var_dump($dataObject4);
+
+echo "</pre>";

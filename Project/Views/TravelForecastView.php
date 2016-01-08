@@ -55,17 +55,31 @@ class TravelForecastView
         }
         return "";
     }
-    public function getTravelDate()
+
+    public function getDateTime()
     {
-        // Format YYYY-MM-DD
-        return $this->getTravelYear()."-".$this->getTravelMonth()."-".$this->getTravelDay();
-    }
-    public function getTravelTime()
-    {
-        // Format HH:MM, departure or arrival
-        return $this->getTravelByDeparture() ?
-            $this->getDestinationHour() . ":" . $this->getDestinationMinute() :
-            $this->getArrivalHour() . ":" . $this->getArrivalMinute();
+        // Format YYYY-MM-DD'T'HH:MM:SS'Z'
+        $day = intval($this->getDay());
+
+        // Get departure or arrival time
+        $hour = $this->travelByDeparture() ? $this->getDestinationHour() :  $this->getArrivalHour();
+        $minute = $this->travelByDeparture() ? $this->getDestinationMinute() :  $this->getArrivalMinute();
+        // Convert to int so I can work with it
+        $time = intval(($hour . $minute));
+
+        // Depending on the time, convert to any of 00, 03, 06, 09, 12, 15, 18, 21 (coz of three hour forecasts)
+        if      ($time >= 2230 ) { $timeStr = "00"; $day += 1; } // Can be issues when transitioning from month to month
+        else if ($time >= 1930)  { $timeStr = "21"; }
+        else if ($time >= 1630)  { $timeStr = "18"; }
+        else if ($time >= 1330)  { $timeStr = "15"; }
+        else if ($time >= 1030)  { $timeStr = "12"; }
+        else if ($time >= 730)   { $timeStr = "09"; }
+        else if ($time >= 430)   { $timeStr = "06"; }
+        else if ($time >= 130)   { $timeStr = "03"; }
+        else                     { $timeStr = "00"; }
+
+        //2016-01-08 21:00:00
+        return $this->getYear()."-".sprintf("%02d", $this->getMonth())."-".sprintf("%02d", $day) . " " . $timeStr . ":00:00";
     }
 
     /**
@@ -213,11 +227,17 @@ class TravelForecastView
                     <input type="text" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
                 </div>
                 <div>
-                    <input type="submit" name="s1" value="Skicka">
+                    <input type="submit" id="submit" name="s1" value="Skicka">
                 </div>
             </form>
         </div>';
     }
+
+            // <form method="post">
+            //     <input autofocus="autofocus" placeholder="Add Name for Storing" id="nameId" name="nameName">
+            //     <input type="submit" id="submit2" name="s2" value="Submit">
+            //     <div id="output"></div>
+            // </form>
 
     /**
      * Second part of the app, the list of train times (Note: Split into new View?)
@@ -270,7 +290,7 @@ class TravelForecastView
     private function validateTime($hour = "", $minute = "")
     {
         // Validate departure or arrival time
-        return $this->getTravelByDeparture() ?
+        return $this->travelByDeparture() ?
             // Validate for number
             is_numeric($this->getDestinationHour()) && is_numeric($this->getDestinationMinute()) :
             is_numeric($this->getArrivalHour()) && is_numeric($this->getArrivalMinute());
@@ -297,7 +317,7 @@ class TravelForecastView
      *
      * @return boolean
      */
-    private function getTravelByDeparture()
+    private function travelByDeparture()
     {
         return isset($_GET['by']) ? $_GET['by'] : "" == "departure";
     }
