@@ -2,47 +2,62 @@
 
 class ForecastDAL
 {
-    public function getForecast($lat, $lng, $datetime)
+    /**
+     * Get a forecast with matching coordinates and datetime
+     *
+     * @param object, string
+     * @return object | null
+     */
+    public function getForecast($location, $datetime)
     {
         $forecast = null;
 
         $conn = $this->establishConnection();
         if ($stmt = $conn->prepare("SELECT * FROM travelapp_forecasts WHERE (lat = ? AND lng = ? AND forecast_time = ?)")) {
-            $stmt->bind_param('sss', $lat, $lng, $datetime);
+            $stmt->bind_param('sss', $location->lat, $location->lng, $datetime);
             $stmt->execute();
             $stmt->bind_result($id, $location, $lat, $lng, $forecastTime, $temperature, $icon, $description);
             while ($stmt->fetch()) {
-                $forecast =  (object) [ "datetime", $forecastTime, "temperature" => $temperature, "icon" => $icon, "description" => $description ];
+                $forecast =  (object) [ "forecastTime" => $forecastTime, "temperature" => $temperature, "icon" => $icon, "description" => $description ];
             }
         }
         $conn->close();
 
-        if ($forecast !== null) {
-            echo 'Forecast was found! ';
-        }
         return $forecast;
     }
 
-    // Issues here might be sql-injection, from the API
-    public function saveForecasts($lat, $lng, $forecasts)
+
+    /**
+     * Multiple insertion query, note: security
+     *
+     * @param object, object[]
+     * @return boolean
+     */
+    public function saveForecasts($location, $forecasts)
     {
         $sql = "INSERT INTO travelapp_forecasts (location, lat, lng, forecast_time, temperature, icon, description) VALUES ";
 
         // Prepare query for multiple entries
         foreach ($forecasts as $forecast)
         {
-            $sql .= "('$forecast->location', '$lat', '$lng', '$forecast->datetime', $forecast->temperature, '$forecast->icon', '$forecast->description'), ";
+            $sql .= "('$forecast->location', '$location->lat', '$location->lng', '$forecast->forecastTime',
+             $forecast->temperature, '$forecast->icon', '$forecast->description'), ";
         }
         // Remove the trailing ", "
         $sql = rtrim($sql, ", ");
 
         $conn = $this->establishConnection();
         if ($conn->query($sql) === false) {
-            echo "Error: " . $sql . "<br>" . $conn->error;
+            // echo "Error: " . $sql . "<br>" . $conn->error;
+            return false;
         }
         $conn->close();
+        return true;
     }
 
+    /**
+     * @return mysqli connetion
+     */
     private function establishConnection()
     {
          // Create and check connection

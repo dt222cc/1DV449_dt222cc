@@ -5,8 +5,10 @@
  */
 class LocationAPI {
     /**
-     * @param string, string
-     * @return array
+     * Get location from API with a location name
+     *
+     * @param string
+     * @return object
      */
     public function getLocation($locationName)
     {
@@ -23,7 +25,7 @@ class LocationAPI {
             // throw new exception(); // Reminder: Add custom execeptions
             return null;
         }
-        // Parse json to associative array and simplify
+        // Parse json to on object for easy access, skipped classes
         $location = json_decode($data);
         return (object) [
             'toponymName' => $location->geonames[0]->toponymName,

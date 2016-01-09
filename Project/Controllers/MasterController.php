@@ -3,16 +3,19 @@
 class MasterController
 {
     /**
-     * @var Models/TravelForecastModel
-     * @var Views/TravelForecastView
+     * @var /Models/TravelForecastModel
      */
     private $model;
+
+    /**
+     * @var /Views/TravelForecastView
+     */
     private $view;
 
     /**
      * Dependency injection
      *
-     * @param Views/TravelForecastView
+     * @param /Views/TravelForecastModel, /Views/TravelForecastView
      */
     public function __construct(TravelForecastModel $m, TravelForecastView $v)
     {
@@ -21,27 +24,21 @@ class MasterController
     }
 
     /**
-     * ...
+     * Handle the flow of the service
      */
     public function doTravelForecastService()
     {
-        // If form has been submitted, do validate data and...
-        if ($this->view->didUserSubmitForm()) {
-
-            if ($this->view->validateFields()) {
-                    // ...get location coordinates
-                    $origin = $this->model->getLocation($this->view->getOrigin());
-                    // $destination = $this->model->getLocation($this->view->getDestination());
-
-                    // ...get the forecast for specified date, time and coordinates
-                    $oForecast = $this->model->getForecast($origin->lat, $origin->lng, $this->view->getDateTime());
-                    // $dForecast = $this->model->getForecast($destination->lat, $destination->lng, $this->view->getDateTime());
-
-            } else {
-
+        // If form has been submitted and passed the validation
+        if ($this->view->didUserSubmitForm() && $this->view->validateFields()) {
+            // ...get locations
+            if ($this->model->getLocations($this->view->getOrigin(), $this->view->getDestination()) === true) {
+                // ...get forecasts
+                if ($this->model->getForecasts($this->view->getDateTime()) === false) {
+                    // ...something for error presentation
+                }
             }
 
-            // Also need to handle exceptions to view (webservice down, etc)
+            // Need to upgrade exception handling
         }
     }
 }

@@ -2,6 +2,12 @@
 
 class LocationDAL
 {
+    /**
+     * Get a location with matching name (can be issues, haven't really looked into the geonames structure or rather how to use it properly)
+     *
+     * @param string
+     * @return object | null
+     */
     public function getLocation($locationName)
     {
         $location = null;
@@ -17,12 +23,15 @@ class LocationDAL
         }
         $conn->close();
 
-        if ($location !== null) {
-            echo 'Locaton was found! ';
-        }
         return $location;
     }
 
+    /**
+     * Multiple insertion query
+     *
+     * @param object
+     * @return boolean
+     */
     public function saveLocation($location)
     {
         try {
@@ -42,6 +51,9 @@ class LocationDAL
         }
     }
 
+    /**
+     * @return mysqli connetion
+     */
     private function establishConnection()
     {
          // Create and check connection

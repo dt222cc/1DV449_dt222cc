@@ -4,6 +4,7 @@ class LayoutView
 {
     /**
      * Render the Layout
+     * @param /Views/TravelForecastView
      */
     public function render(TravelForecastView $view)
     {

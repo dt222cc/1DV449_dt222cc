@@ -5,14 +5,16 @@
  */
 class ForecastAPI {
     /**
-     * @param string, string
-     * @return
+     * Get forecast from API with coordinates
+     *
+     * @param object
+     * @return object[]
      */
-    public function getForecast($lat, $lng)
+    public function getForecast($location)
     {
         // // Establish connection, get xml
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "http://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lng&units=metric&appid=".Settings::WEATHERKEY);
+        curl_setopt($ch, CURLOPT_URL, "http://api.openweathermap.org/data/2.5/forecast?lat=$location->lat&lon=$location->lng&units=metric&appid=".Settings::WEATHERKEY);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         $data = curl_exec($ch);

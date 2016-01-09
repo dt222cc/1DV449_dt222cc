@@ -1,17 +1,24 @@
 <?php
 
-require_once("Models/DAL/LocationDAL.php");
-require_once("Models/API/LocationAPI.php");
-require_once("Models/DAL/ForecastDAL.php");
-require_once("Models/API/ForecastAPI.php");
+require_once("Models/LocationDAL.php");
+require_once("Models/LocationAPI.php");
+require_once("Models/ForecastDAL.php");
+require_once("Models/ForecastAPI.php");
 
 class TravelForecastModel
 {
     private $locationDAL;
-    private $LocationAPI;
     private $forecastDAL;
+    private $locationAPI;
     private $forecastAPI;
+    private $originLocation;
+    private $destinationLocation;
+    private $originForecast;
+    private $destinationForecast;
 
+    /**
+     * Initialized the data access layers and webservices
+     */
     public function __construct()
     {
         $this->locationDAL = new LocationDAL();
@@ -21,13 +28,75 @@ class TravelForecastModel
     }
 
     /**
+     * Getters for the view
+     *
+     * @return object
+     */
+    public function getOriginLocation()
+    {
+        return $this->originLocation;
+    }
+    public function getDestinationLocation()
+    {
+        return $this->destinationLocation;
+    }
+    public function getOriginForecast()
+    {
+        return $this->originForecast;
+    }
+    public function getDestinationForecast()
+    {
+        return $this->destinationForecast;
+    }
+
+    /**
+     * Get and set the locations
+     *
+     * @param string, string
+     * @return boolean
+     */
+    public function getLocations($originName, $destinationName)
+    {
+        $this->originLocation = $this->getLocation($originName);
+        if ($this->originLocation === false) {
+            return false;
+        }
+        $this->destinationLocation = $this->getLocation($destinationName);
+        if ($this->destinationLocation === false) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Get and set the forecasts
+     *
      * @param string
-     * @return array
+     * @return boolean
+     */
+    public function getForecasts($forecastTime)
+    {
+        $this->originForecast = $this->getForecast($this->getOriginLocation(), $forecastTime);
+        if ($this->originForecast === false) {
+            return false;
+        }
+        $this->destinationForecast = $this->getForecast($this->getDestinationLocation(), $forecastTime);
+        if ($this->destinationForecast === false) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Get location from the database or from the API (save to database)
+     *
+     * @param string
+     * @return object | null
      */
     public function getLocation($locationName)
     {
         // Try to get locations from the database
-        echo 'Trying to get location from the database. ';
+        echo '<br><br>Trying to get location from the database. ';
         $location = $this->locationDAL->getLocation($locationName);
 
         // Get from webservice if no match
@@ -40,34 +109,46 @@ class TravelForecastModel
                 return null;
             }
             // Save to database
-            echo 'Saving to database. ';
-            $this->locationDAL->saveLocation($location);
+            echo 'Location was retrieved from the webservice. Saving location to the database. ';
+            if ($this->locationDAL->saveLocation($location) === false) {
+                echo 'Failed to save. ';
+                return null;
+            }
         }
+        echo 'Location was found in the database! ';
         return $location;
     }
 
     /**
-     * @param string
-     * @return array
+     * Get forecast from the database or from the API (save to database)
+     *
+     * @param object, string
+     * @return object | null
      */
-    public function getForecast($lat, $lng, $forecastTime)
+    public function getForecast($location, $forecastTime)
     {
         // Try to get forecast from the database
         echo '</br></br>Trying to get forecasts from the database. ';
-        $forecast = $this->forecastDAL->getForecast($lat, $lng, $forecastTime);
+        $forecast = $this->forecastDAL->getForecast($location, $forecastTime);
         // Get from webservice if no match
         if ($forecast === null) {
             echo 'Not found in the database, trying the webservice. ';
-            $forecasts = $this->forecastAPI->getForecast($lat, $lng);
+            $forecasts = $this->forecastAPI->getForecast($location);
             // If webservice is down or issue with the query
             if ($forecasts === null) {
-                echo 'Webservice is down, try again later. ';
+                echo 'Not found in the the webservice. Try again later or try another search. ';
                 return null;
             }
             // Save to database
-            echo 'Trying to save forecasts to the database </br></br>';
-            $this->forecastDAL->saveForecasts($lat, $lng, $forecasts);
+            echo 'Forecast was retrieved from the webservice. Saving forecasts to the database. ';
+            if ($this->forecastDAL->saveLocation($location, $forecasts) === false) {
+                echo 'Failed to save. ';
+                return null;
+            }
         }
+        echo 'forecast was found in the database! ';
         return $forecast;
     }
 }
+
+// Note: echos are meant for me to see the flow better, probably gonna replace them with custom exceptions or something
