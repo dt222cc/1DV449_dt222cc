@@ -18,7 +18,7 @@ class LocationDAL
             $stmt->execute();
             $stmt->bind_result($id, $toponymName, $name, $lat, $lng);
             while ($stmt->fetch()) {
-                $location =  (object) [ "toponymName" => $toponymName, "name" => $name, "lat" => $lat, "lng" => $lng ];
+                $location =  (object) [ "toponymName" => $toponymName, "name" => $locationName, "lat" => $lat, "lng" => $lng ];
             }
         }
         $conn->close();

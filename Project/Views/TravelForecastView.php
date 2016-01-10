@@ -26,49 +26,46 @@ class TravelForecastView
      */
     public function didUserSubmitForm()
     {
-        return isset($_GET['s1']);
+        return isset($_POST['s1']);
     }
 
     /**
-     * Accessor methods, API param
+     * Trim text, convert to lower case, replace åäö to aao
      *
-     * @return mixed
+     * @return string
      */
     public function getOrigin()
     {
-        if (isset($_GET['O'])) {
-            $a = array("å", "ä", "ö");
-            $b = array("a", "a", "o");
-            $c = str_replace($a, $b, strtolower(trim($_GET['O'])));
-            return $c;
-        }
-        return "";
+        return isset($_POST['O']) ? str_replace(array("å", "ä", "ö"), array("a", "a", "o"), strtolower(trim($_POST['O']))) : "";
     }
 
+    /**
+     * Trim text, convert to lower case, replace åäö with aao
+     *
+     * @return string
+     */
     public function getDestination()
     {
-        if (isset($_GET['Z'])) {
-            $a = array("å", "ä", "ö");
-            $b = array("a", "a", "o");
-            $c = str_replace($a, $b, strtolower(trim($_GET['Z'])));
-            return $c;
-        }
-        return "";
+        return isset($_POST['Z']) ? str_replace(array("å", "ä", "ö"), array("a", "a", "o"), strtolower(trim($_POST['Z']))) : "";
     }
 
+    /**
+     * Compile/format date and time so it can be used  to match with database, api forecast time
+     *
+     * @return string
+     */
     public function getDateTime()
     {
-        // Format YYYY-MM-DD'T'HH:MM:SS'Z'
         $day = intval($this->getDay());
 
         // Get departure or arrival time
         $hour = $this->travelByDeparture() ? $this->getDestinationHour() :  $this->getArrivalHour();
         $minute = $this->travelByDeparture() ? $this->getDestinationMinute() :  $this->getArrivalMinute();
-        // Convert to int so I can work with it
-        $time = intval(($hour . $minute));
 
-        // Depending on the time, convert to any of 00, 03, 06, 09, 12, 15, 18, 21 (coz of three hour forecasts)
-        if      ($time >= 2230 ) { $timeStr = "00"; $day += 1; } // Can be issues when transitioning from month to month
+        // Convert to int, so I can think...
+        $time = intval(($hour . $minute));
+        // Depending on the time, convert to any of 00, 03, 06, 09, 12, 15, 18, 21 (coz of three hour forecasts from API)
+        if      ($time >= 2230 ) { $timeStr = "00"; $day += 1; } // Get the 00 forcast "next day". Can be issues when transitioning from month to month
         else if ($time >= 1930)  { $timeStr = "21"; }
         else if ($time >= 1630)  { $timeStr = "18"; }
         else if ($time >= 1330)  { $timeStr = "15"; }
@@ -78,7 +75,7 @@ class TravelForecastView
         else if ($time >= 130)   { $timeStr = "03"; }
         else                     { $timeStr = "00"; }
 
-        //2016-01-08 21:00:00
+        // Format YYYY-MM-DD HH:MM:SS
         return $this->getYear()."-".sprintf("%02d", $this->getMonth())."-".sprintf("%02d", $day) . " " . $timeStr . ":00:00";
     }
 
@@ -92,9 +89,10 @@ class TravelForecastView
         $this->message = "";
 
         if ($this->getOrigin() == "")       { $this->message .= "Fältet för avgångsplats saknas<br>"; }
-        if ($this->getDestination() == "")  { $this->message .= "Fältet för destionation saknas<br>"; }
+        if ($this->getDestination() == "")  { $this->message .= "Fältet för ankomstplats saknas<br>"; }
         if ($this->validateDate() == false) { $this->message .= "Fel format för datum<br>"; }
         if ($this->validateTime() == false) { $this->message .= "Fel format för tid<br>"; }
+        if ($this->containsSpecialCharacters() == true)  { $this->message .= "Fält innehåller ogiltiga tecken<br>"; }
 
         return $this->message == "";
     }
@@ -114,7 +112,6 @@ class TravelForecastView
             // Fields must be validated before getting the travel html (error messages: $this->message)
             $html .=  $this->getTravelHTML();
             if ($re == true) { // If validation passed, add more parts (WIP!)
-                $html .= $this->getTravelListHTML();
                 $html .= $this->getForecastHTML();
             }
         }
@@ -134,9 +131,8 @@ class TravelForecastView
      */
     private function getTravelHTML()
     {
-        // Options for day selection
+        // Options for day selection, 31 days, default selection: current day
         $dayOptions = "";
-        // 31 days, default selection: current day
         for ($i = 1; $i <= 31; $i++) {
             if ($i === intval(date('j'))) {
                 $dayOptions .= '<option value="'.$i.'" selected="">'.$i.'</option>';
@@ -146,10 +142,9 @@ class TravelForecastView
             }
         }
 
-        // Options for month selection (note swedish month names)
+        // Options for month selection (note swedish month names)  12 months, default selection: current month
         $monthOptions = "";
         $months = [ "Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December" ];
-        // 12 months, default selection: current month
         for ($i = 1; $i <= 12; $i++) {
             if ($i === intval(date('n'))) {
                 $monthOptions .= '<option value="'.$i.'" selected="">'.$months[$i - 1].'</option>';
@@ -169,10 +164,11 @@ class TravelForecastView
         $hours1 = ""; // Departure
         $hours2 = ""; // Arrival
         for ($i = 0; $i < 24; $i++) {
-            $j = sprintf("%02d", $i);
-            if ($i === intval(date('G'))) { // If current hour, make "selected"
+            $j = sprintf("%02d", $i); // Add a \0 if not two characters long: 0 > 00, 1 > 01, 10 still 10
+            // If current hour, make "selected"
+            if ($i === intval(date('G'))) {
                 $hours1 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
-                // Arrival hour offset, 1 hour later, use 0 instead of 24
+                // Arrival hour offset, 1 hour later, use 0 instead of 24 if time == 23
                 $j = $i == 23 ? sprintf("%02d", 0) : sprintf("%02d", $i + 1);
                 $hours2 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
             }
@@ -182,12 +178,13 @@ class TravelForecastView
             }
         }
 
-        // Options for minutes selection
+        // Options for minutes selection, should be between 0 and 59
         $minutes1 = ""; // Departure
         $minutes2 = ""; // Arrival
         for ($i = 0; $i < 60; $i++) {
             $j = sprintf("%02d", $i);
-            if ($j === date('i')) { // If same as current minute, make "selected"
+            // If same as current minute, make "selected"
+            if ($j === date('i')) {
                 $minutes1 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
                 $minutes2 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
             } else {
@@ -199,7 +196,7 @@ class TravelForecastView
         return '
         <div id="location-container">
             <p style ="color:#ff0000"><b>'.$this->message.'</b></p>
-            <form method="get">
+            <form method="post">
                 <div class="date">
                     <label for="d">Dag: </label>
                     <select id="d" name="d">'.$dayOptions.'</select>
@@ -233,25 +230,6 @@ class TravelForecastView
         </div>';
     }
 
-            // <form method="post">
-            //     <input autofocus="autofocus" placeholder="Add Name for Storing" id="nameId" name="nameName">
-            //     <input type="submit" id="submit2" name="s2" value="Submit">
-            //     <div id="output"></div>
-            // </form>
-
-    /**
-     * Second part of the app, the list of train times (Note: Split into new View?)
-     *
-     * @return string HTML
-     */
-    private function getTravelListHTML()
-    {
-        return '
-        <div id="train-list-containter">
-            <h3>Tåg tider ...</h3>
-        </div>';
-    }
-
     /**
      * Third part of the app, the forecast presentation (Note: Split into new View?)
      *
@@ -262,15 +240,44 @@ class TravelForecastView
         $departureHTML = "";
         $arrivalHTML = "";
 
+        // Doing some tests
+        $oName = $this->model->getOriginLocation()->toponymName;
+        $dName = $this->model->getDestinationLocation()->toponymName;
+        $oTime = $this->model->getOriginForecast()->forecastTime;
+        $dTime = $this->model->getDestinationForecast()->forecastTime;
+
         return '
         <div id="forecast-containter">
             <div class="forecast">
-                <h3>Väder vid avgång i ...</h3>
+                <h3>Vädret i '.$oName.'</h3>
             </div>
             <div class="forecast">
-                <h3>Väder vid ankomst i ...</h3>
+                <h3>Vädret i '.$dName.'</h3>
             </div>
         </div>';
+    }
+
+    /**
+     * Fields for time has to be numeric
+     *
+     * @return bool
+     */
+    private function validateTime()
+    {
+        // Validate departure or arrival time
+        return $this->travelByDeparture() ?
+            is_numeric($this->getDestinationHour()) && is_numeric($this->getDestinationMinute()) :
+            is_numeric($this->getArrivalHour()) && is_numeric($this->getArrivalMinute());
+    }
+
+    /**
+     * Checks if the date from user input can be parsed as a "date"
+     *
+     * @return bool
+     */
+    private function validateDate()
+    {
+        return checkdate($this->getMonth(), $this->getDay(), $this->getYear());
     }
 
     /**
@@ -280,25 +287,11 @@ class TravelForecastView
      */
     private function containsSpecialCharacters()
     {
-        if ($this->removeSomeSpecialCharacters($this->getOrigin()) != $this->getOrigin() ||
-            $this->removeSomeSpecialCharacters($this->getDestination()) != $this->getDestination()) {
+        if ($this->removeSomeSpecialCharacters($_POST['O']) != $_POST['O'] ||
+            $this->removeSomeSpecialCharacters($_POST['Z']) != $_POST['Z']) {
             return true;
         }
         return false;
-    }
-
-    private function validateTime($hour = "", $minute = "")
-    {
-        // Validate departure or arrival time
-        return $this->travelByDeparture() ?
-            // Validate for number
-            is_numeric($this->getDestinationHour()) && is_numeric($this->getDestinationMinute()) :
-            is_numeric($this->getArrivalHour()) && is_numeric($this->getArrivalMinute());
-    }
-
-    private function validateDate()
-    {
-        return checkdate($this->getMonth(), $this->getDay(), $this->getYear());
     }
 
     /**
@@ -309,7 +302,7 @@ class TravelForecastView
      */
     private function removeSomeSpecialCharacters($string)
     {
-        return preg_replace("/[^A-Za-z0-9åäöÅÄÖ?!,.;:-_ ]/", "", strip_tags($string));
+        return preg_replace("/[^A-Za-z0-9åäöÅÄÖ]/", "", strip_tags($string));
     }
 
     /**
@@ -319,7 +312,7 @@ class TravelForecastView
      */
     private function travelByDeparture()
     {
-        return isset($_GET['by']) ? $_GET['by'] : "" == "departure";
+        return isset($_POST['by']) ? $_POST['by'] : "" == "departure";
     }
 
     /**
@@ -329,34 +322,49 @@ class TravelForecastView
      */
     private function getDay()
     {
-        return isset($_GET['d']) ? trim($_GET['d']) : "";
+        return isset($_POST['d']) ? trim($_POST['d']) : "";
     }
     private function getMonth()
     {
-        return isset($_GET['m']) ? trim($_GET['m']) : "";
+        return isset($_POST['m']) ? trim($_POST['m']) : "";
     }
     private function getYear()
     {
-        return isset($_GET['y']) ? trim($_GET['y']) : "";
+        return isset($_POST['y']) ? trim($_POST['y']) : "";
     }
     private function getDestinationHour()
     {
-        return isset($_GET['dH']) ? trim($_GET['dH']) : "";
+        return isset($_POST['dH']) ? trim($_POST['dH']) : "";
     }
     private function getDestinationMinute()
     {
-        return isset($_GET['dM']) ? trim($_GET['dM']) : "";
+        return isset($_POST['dM']) ? trim($_POST['dM']) : "";
     }
     private function getArrivalHour()
     {
-        return isset($_GET['aH']) ? trim($_GET['aH']) : "";
+        return isset($_POST['aH']) ? trim($_POST['aH']) : "";
     }
     private function getArrivalMinute()
     {
-        return isset($_GET['aM']) ? trim($_GET['aM']) : "";
+        return isset($_POST['aM']) ? trim($_POST['aM']) : "";
+    }
+
+    /**
+     * Issues with åäö presentation, postponed
+     *
+     * @return string
+     */
+    private function getOriginToponymName()
+    {
+        $location = $this->model->getOriginLocation();
+        return $location !== null ? $location->toponymName : "";
+    }
+    private function getDestinationToponymName()
+    {
+        $location = $this->model->getDestinationLocation();
+        return $location !== null ? $location->toponymName : "";
     }
 }
 
-// Do add a reset button
-// Swap out textfield values to the actual name of the location, "Kalmar" should be replaced with "Kalmar Centralstation"
-// for that to work i need to retrieve that data from the model, read-only principle
+// Do add a reset button, if using get
+// Swap out textfield values to the actual name of the location, "Kalmar" should be replaced with "Kalmar Centralstation", postponed

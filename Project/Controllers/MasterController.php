@@ -31,11 +31,21 @@ class MasterController
         // If form has been submitted and passed the validation
         if ($this->view->didUserSubmitForm() && $this->view->validateFields()) {
             // ...get locations
-            if ($this->model->getLocations($this->view->getOrigin(), $this->view->getDestination()) === true) {
+            $re = $this->model->getLocations($this->view->getOrigin(), $this->view->getDestination());
+            if ($re === true) {
+                echo 'Locations pass! ';
                 // ...get forecasts
-                if ($this->model->getForecasts($this->view->getDateTime()) === false) {
+                $re = $this->model->getForecasts($this->view->getDateTime());
+                if ($re === false) {
                     // ...something for error presentation
+                    echo ' Forecasts fail! ';
                 }
+                else {
+                    echo 'Forecasts pass! ';
+                }
+            }
+            else {
+                echo 'Locations fail! ';
             }
 
             // Need to upgrade exception handling

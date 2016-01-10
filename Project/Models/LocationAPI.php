@@ -6,6 +6,7 @@
 class LocationAPI {
     /**
      * Get location from API with a location name
+     * Have tried to make the search more specific like railstations, some places work and while other do not.
      *
      * @param string
      * @return object
@@ -28,7 +29,7 @@ class LocationAPI {
         // Parse json to on object for easy access, skipped classes
         $location = json_decode($data);
         return (object) [
-            'toponymName' => $location->geonames[0]->toponymName,
+            'toponymName' => utf8_decode($location->geonames[0]->toponymName),
             'name' => $locationName,
             'lat' => $location->geonames[0]->lat,
             'lng' => $location->geonames[0]->lng

@@ -58,11 +58,11 @@ class TravelForecastModel
     public function getLocations($originName, $destinationName)
     {
         $this->originLocation = $this->getLocation($originName);
-        if ($this->originLocation === false) {
+        if ($this->originLocation === null) {
             return false;
         }
         $this->destinationLocation = $this->getLocation($destinationName);
-        if ($this->destinationLocation === false) {
+        if ($this->destinationLocation === null) {
             return false;
         }
         return true;
@@ -77,11 +77,11 @@ class TravelForecastModel
     public function getForecasts($forecastTime)
     {
         $this->originForecast = $this->getForecast($this->getOriginLocation(), $forecastTime);
-        if ($this->originForecast === false) {
+        if ($this->originForecast === null) {
             return false;
         }
         $this->destinationForecast = $this->getForecast($this->getDestinationLocation(), $forecastTime);
-        if ($this->destinationForecast === false) {
+        if ($this->destinationForecast === null) {
             return false;
         }
         return true;
@@ -114,8 +114,10 @@ class TravelForecastModel
                 echo 'Failed to save. ';
                 return null;
             }
+            echo 'Successfully saved location.';
+        } else {
+            echo 'Location was found in the database!';
         }
-        echo 'Location was found in the database! ';
         return $location;
     }
 
@@ -141,12 +143,21 @@ class TravelForecastModel
             }
             // Save to database
             echo 'Forecast was retrieved from the webservice. Saving forecasts to the database. ';
-            if ($this->forecastDAL->saveLocation($location, $forecasts) === false) {
+            if ($this->forecastDAL->saveForecasts($location, $forecasts) === false) {
                 echo 'Failed to save. ';
                 return null;
             }
+            echo 'Successfully saved forecasts. ';
+            foreach ($forecasts as $f) {
+                if ($f->forecastTime === $forecastTime) {
+                    echo 'Retrieved the forecast from the list. ';
+                    $forecast = $f;
+                }
+            }
         }
-        echo 'forecast was found in the database! ';
+        else {
+            echo 'forecast was found in the database!';
+        }
         return $forecast;
     }
 }

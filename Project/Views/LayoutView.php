@@ -10,10 +10,10 @@ class LayoutView
     {
         echo '
 <!DOCTYPE html>
-<html>
+<html lang="sv">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8 ">
+        <meta name="viewport" content="width=device-width" initial-scale="1.0">
         <title>dt222cc - Projekt väder prognos tillägg till reseplanerare applikationer</title>
         <link rel="stylesheet" href="Content/bootstrap.min.css" />
         <link rel="stylesheet" href="Content/site.css" />
