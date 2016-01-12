@@ -10,7 +10,7 @@ class ForecastAPI {
      * @param object
      * @return object[] | null
      */
-    public function getForecast($location)
+    public function getForecast($location, $forecastTime)
     {
         $lat = $location->lat;
         $lng = $location->lng;
@@ -32,16 +32,14 @@ class ForecastAPI {
         // $json = json_decode(file_get_contents("forecasts.json"));
         $json = json_decode($data);
 
-        // Prep today, format YYYY-MM-DD
-        $today = getdate();
-        $todayStr =  $today['year']."-".sprintf("%02d", $today['mon'])."-".sprintf("%02d", $today['mday']);
-
+        // Prep selected day, format YYYY-MM-DD HH:MM:SS to DD
+        $selectedDay = explode('-', explode(' ', $forecastTime)[0])[2];
         $forecasts = array();
 
         // The logic here should be okay, the first forecasts is the current day, which is what i keep
         foreach ($json->list as $forecast) {
             // Only retrieve todays forecasts
-            if (explode(' ', $forecast->dt_txt)[0] === $todayStr) {
+            if (explode('-', explode(' ', $forecast->dt_txt)[0])[2] === $selectedDay) {
                 $object = new stdClass();
                 $object->location = $location->toponymName;
                 $object->forecastTime = $forecast->dt_txt;
@@ -49,12 +47,10 @@ class ForecastAPI {
                 $object->icon = $forecast->weather[0]->icon;
                 $object->description = $forecast->weather[0]->description;
                 $forecasts[] = $object;
-            } else {
-                // break, return forecasts when there is no more forecasts for the day
-                return $forecasts;
             }
         }
-        // If this are being reached then an error occured
-        return null;
+
+        // Todo: Handle days outside reach
+        return $forecasts;
     }
 }

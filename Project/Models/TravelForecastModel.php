@@ -135,7 +135,7 @@ class TravelForecastModel
         // Get from webservice if no match
         if ($forecast === null) {
             echo 'Not found in the database, trying the webservice. ';
-            $forecasts = $this->forecastAPI->getForecast($location);
+            $forecasts = $this->forecastAPI->getForecast($location, $forecastTime);
             // If webservice is down or issue with the query
             if ($forecasts === null) {
                 echo 'Not found in the the webservice. Try again later or try another search. ';

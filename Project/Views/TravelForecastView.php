@@ -237,22 +237,26 @@ class TravelForecastView
      */
     private function getForecastHTML()
     {
-        $departureHTML = "";
-        $arrivalHTML = "";
-
-        // Doing some tests
-        $oName = $this->model->getOriginLocation()->toponymName;
-        $dName = $this->model->getDestinationLocation()->toponymName;
-        $oTime = $this->model->getOriginForecast()->forecastTime;
-        $dTime = $this->model->getDestinationForecast()->forecastTime;
+        $oL = $this->model->getOriginLocation();
+        $dL = $this->model->getDestinationLocation();
+        $oF = $this->model->getOriginForecast();
+        $dF = $this->model->getDestinationForecast();
 
         return '
         <div id="forecast-containter">
             <div class="forecast">
-                <h3>Vädret i '.$oName.'</h3>
+                <h3>Vädret i '.$oL->toponymName.' vid klockan '.$oF->forecastTime.'<span class="weather-coordinates">(Lat: '.$oL->lat.', Lng: '.$oL->lng.')</span></h3>
+                <div class="weather-symbol">
+                    <img alt="weather description image" src="/project/Content/images/'.$oF->icon.'.png" />
+                </div>
+                <div class="weather-temperature">'.$oF->temperature.' &#8451;</div>
             </div>
             <div class="forecast">
-                <h3>Vädret i '.$dName.'</h3>
+                <h3>Vädret i '.$dL->toponymName.' vid klockan '.$dF->forecastTime.'<span class="weather-coordinates">(Lat: '.$dL->lat.', Lng: '.$dL->lng.')</span></h3>
+                <div class="weather-symbol">
+                    <img alt="weather description image" src="/project/Content/images/'.$dF->icon.'.png" />
+                </div>
+                <div class="weather-temperature">'.$dF->temperature.' &#8451;</div>
             </div>
         </div>';
     }
