@@ -56,16 +56,17 @@ class TravelForecastView
      */
     public function getDateTime()
     {
-        $day = intval($this->getDay());
+        $timeStr = "";
 
         // Get departure or arrival time
         $hour = $this->travelByDeparture() ? $this->getDestinationHour() :  $this->getArrivalHour();
         $minute = $this->travelByDeparture() ? $this->getDestinationMinute() :  $this->getArrivalMinute();
 
-        // Convert to int, so I can think...
-        $time = intval(($hour . $minute));
+        // Convert to int, so I can handle this logic better
+        $time = intval($hour . sprintf( "%02d", $minute));
+        $day = intval($this->getDay());
         // Depending on the time, convert to any of 00, 03, 06, 09, 12, 15, 18, 21 (coz of three hour forecasts from API)
-        if      ($time >= 2230 ) { $timeStr = "00"; $day += 1; } // Get the 00 forcast "next day". Can be issues when transitioning from month to month
+        if      ($time >= 2230)  { $timeStr = "00"; $day += 1; } // Can be issues when transitioning from month to month
         else if ($time >= 1930)  { $timeStr = "21"; }
         else if ($time >= 1630)  { $timeStr = "18"; }
         else if ($time >= 1330)  { $timeStr = "15"; }
@@ -75,6 +76,16 @@ class TravelForecastView
         else if ($time >= 130)   { $timeStr = "03"; }
         else                     { $timeStr = "00"; }
 
+        $today = getdate();
+        // Add hours to converted time if it went passed the current time (webservice do not keep old forecasts)
+        if ($today['mday'] === $day && intval($timeStr."00") < intval($today['hours'] . $today['minutes'])) {
+            // Add 3 hours to get the next forecast in line
+            $plus3 = intval($timeStr) + 3;
+            if ($plus3 === 24) {
+                $timeStr = "00";
+                $day += 1;
+            }
+        }
         // Format YYYY-MM-DD HH:MM:SS
         return $this->getYear()."-".sprintf("%02d", $this->getMonth())."-".sprintf("%02d", $day) . " " . $timeStr . ":00:00";
     }
