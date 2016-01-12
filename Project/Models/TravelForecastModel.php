@@ -148,6 +148,7 @@ class TravelForecastModel
                 return null;
             }
             echo 'Successfully saved forecasts. ';
+            // Try to get the specific forecast from the list
             foreach ($forecasts as $f) {
                 if ($f->forecastTime === $forecastTime) {
                     echo 'Retrieved the forecast from the list. ';

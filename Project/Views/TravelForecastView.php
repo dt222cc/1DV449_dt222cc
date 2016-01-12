@@ -88,11 +88,11 @@ class TravelForecastView
     {
         $this->message = "";
 
-        if ($this->getOrigin() == "")       { $this->message .= "Fältet för avgångsplats saknas<br>"; }
-        if ($this->getDestination() == "")  { $this->message .= "Fältet för ankomstplats saknas<br>"; }
-        if ($this->validateDate() == false) { $this->message .= "Fel format för datum<br>"; }
-        if ($this->validateTime() == false) { $this->message .= "Fel format för tid<br>"; }
-        if ($this->containsSpecialCharacters() == true)  { $this->message .= "Fält innehåller ogiltiga tecken<br>"; }
+        if ($this->getOrigin() == "")                   { $this->message .= "Fältet för avgångsplats saknas<br>"; }
+        if ($this->getDestination() == "")              { $this->message .= "Fältet för ankomstplats saknas<br>"; }
+        if ($this->validateDate() == false)             { $this->message .= "Fel format för datum<br>"; }
+        if ($this->validateTime() == false)             { $this->message .= "Fel format för tid<br>"; }
+        if ($this->containsSpecialCharacters() == true) { $this->message .= "Fält innehåller ogiltiga tecken<br>"; }
 
         return $this->message == "";
     }
@@ -112,7 +112,13 @@ class TravelForecastView
             // Fields must be validated before getting the travel html (error messages: $this->message)
             $html .=  $this->getTravelHTML();
             if ($re == true) { // If validation passed, add more parts (WIP!)
-                $html .= $this->getForecastHTML();
+                if ($this->model->getOriginLocation() !== null && $this->model->getDestinationLocation() !== null &&
+                    $this->model->getDestinationForecast() !== null && $this->model->getOriginForecast() !== null)
+                {
+                    $html .= $this->getForecastHTML();
+                } else {
+                    // $html .= $this->getErrorMessages();
+                }
             }
         }
         else {
@@ -242,17 +248,20 @@ class TravelForecastView
         $oF = $this->model->getOriginForecast();
         $dF = $this->model->getDestinationForecast();
 
+        // Missing the part of time, opted to not include it because of the lack of traint-times which results in no way of establishing arrival time
         return '
         <div id="forecast-containter">
             <div class="forecast">
-                <h3>Vädret i '.$oL->toponymName.' vid klockan '.$oF->forecastTime.'<span class="weather-coordinates">(Lat: '.$oL->lat.', Lng: '.$oL->lng.')</span></h3>
+                <h3>Vädret i '.$oL->toponymName.' <span class="weather-coordinates">(Lat: '.$oL->lat.', Lng: '.$oL->lng.')</span></h3>
+                <div>Beskrivning: '.$oF->description.'</div>
                 <div class="weather-symbol">
                     <img alt="weather description image" src="/project/Content/images/'.$oF->icon.'.png" />
                 </div>
                 <div class="weather-temperature">'.$oF->temperature.' &#8451;</div>
             </div>
             <div class="forecast">
-                <h3>Vädret i '.$dL->toponymName.' vid klockan '.$dF->forecastTime.'<span class="weather-coordinates">(Lat: '.$dL->lat.', Lng: '.$dL->lng.')</span></h3>
+                <h3>Vädret i '.$dL->toponymName.' <span class="weather-coordinates">(Lat: '.$dL->lat.', Lng: '.$dL->lng.')</span></h3>
+                <div>Beskrivning: '.$dF->description.'</div>
                 <div class="weather-symbol">
                     <img alt="weather description image" src="/project/Content/images/'.$dF->icon.'.png" />
                 </div>
@@ -324,34 +333,13 @@ class TravelForecastView
      *
      * @return string
      */
-    private function getDay()
-    {
-        return isset($_POST['d']) ? trim($_POST['d']) : "";
-    }
-    private function getMonth()
-    {
-        return isset($_POST['m']) ? trim($_POST['m']) : "";
-    }
-    private function getYear()
-    {
-        return isset($_POST['y']) ? trim($_POST['y']) : "";
-    }
-    private function getDestinationHour()
-    {
-        return isset($_POST['dH']) ? trim($_POST['dH']) : "";
-    }
-    private function getDestinationMinute()
-    {
-        return isset($_POST['dM']) ? trim($_POST['dM']) : "";
-    }
-    private function getArrivalHour()
-    {
-        return isset($_POST['aH']) ? trim($_POST['aH']) : "";
-    }
-    private function getArrivalMinute()
-    {
-        return isset($_POST['aM']) ? trim($_POST['aM']) : "";
-    }
+    private function getDay()               { return isset($_POST['d'])  ? trim($_POST['d'])  : ""; }
+    private function getMonth()             { return isset($_POST['m'])  ? trim($_POST['m'])  : ""; }
+    private function getYear()              { return isset($_POST['y'])  ? trim($_POST['y'])  : ""; }
+    private function getDestinationHour()   { return isset($_POST['dH']) ? trim($_POST['dH']) : ""; }
+    private function getDestinationMinute() { return isset($_POST['dM']) ? trim($_POST['dM']) : ""; }
+    private function getArrivalHour()       { return isset($_POST['aH']) ? trim($_POST['aH']) : ""; }
+    private function getArrivalMinute()     { return isset($_POST['aM']) ? trim($_POST['aM']) : ""; }
 
     /**
      * Issues with åäö presentation, postponed
