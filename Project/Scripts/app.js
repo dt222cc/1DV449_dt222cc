@@ -3,22 +3,28 @@
 var app = {
     init: function()
     {
-        $("#submit").click(function() {
+        $('form').on('submit',function() {
+            alert("submit");
+            // Localstorage support
             if (window.localStorage !== undefined) {
-                var fields = "FAKE LOCALSTORAGE";
-                console.log(fields);
-
-                alert("Now Passing stored data to Server through AJAX jQuery");
-                var data2 = $(this).serialize();
-                console.log(data2);
-                
+                // Get data from localstorage, like locations and forecasts
+                var locationsLocal = "Location dummy";
+                var forecastsLocal = "Forecasts dummy";
+                // Then pass them to be parsed as session variables
                 $.ajax({
+                    url: "ajaxHandler.php",
                     type: "POST",
-                    url: "index.php",
-                    data: {data: fields},
-                    success: function (data){
-                        // alert(data);
+                    data: {
+                        locations: locationsLocal,
+                        forecasts: forecastsLocal
                     },
+                    success: function(data) {
+                        alert("success, ajax");
+                    },
+                    error: function ()
+                    {
+                        alert("error, ajax");
+                    }
                 });
             } else {
                 alert("Storage Failed. Try refreshing");

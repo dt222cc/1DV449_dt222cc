@@ -14,6 +14,9 @@ date_default_timezone_set("Europe/Stockholm");
 error_reporting(E_ALL);
 ini_set('display_errors', 'ON');
 
+// APP USES SESSION
+session_start();
+
 // INITIATE OBJECTS AND DO DEPENDENCY INJECTION...
 $m = new TravelForecastModel();
 $v = new TravelForecastView($m);
@@ -26,19 +29,13 @@ $c->doTravelForecastService();
 $lv = new LayoutView();
 $lv->render($v);
 
-// // Trying to pass localstorage values to php, no success so far
-// echo "<br><pre>";
+// Trying to pass localstorage values to php, no success so far
+echo "<br><pre>";
 
-// $dataObject = $_POST;
-// $dataObject2 = $_GET;
-// $dataObject3 = $_POST["data"];
-// $dataObject4 = $_GET["data"];
+echo '<br>Session Locations: ';
+var_dump($_SESSION['locations']);
 
-// var_dump($dataObject);
-// var_dump($dataObject2);
-// var_dump($dataObject3);
-// var_dump($dataObject4);
+echo '<br>Session Forecasts: ';
+var_dump($_SESSION['forecasts']);
 
-// echo "</pre>";
-
-// Reminder, restart server if utf encoding fail
+echo "</pre>";
