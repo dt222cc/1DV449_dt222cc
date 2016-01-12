@@ -129,6 +129,8 @@ class TravelForecastModel
      */
     public function getForecast($location, $forecastTime)
     {
+        echo '</br></br>';
+        var_dump($location->toponymName);
         // Try to get forecast from the database
         echo '</br></br>Trying to get forecasts from the database. ';
         $forecast = $this->forecastDAL->getForecast($location, $forecastTime);
