@@ -6,7 +6,7 @@
 class LocationAPI {
     /**
      * Get location from API with a location name
-     * Have tried to make the search more specific like railstations, some places work and while other do not.
+     * Have tried to make the search more specific like rail stations, some places work and while other do not.
      *
      * @param string
      * @return object
@@ -23,7 +23,7 @@ class LocationAPI {
 
         //Throw exception if connection failed on no search results
         if ( $data === "" || $data === null || json_decode($data)->totalResultsCount === 0) {
-            // throw new exception(); // Reminder: Add custom execeptions
+            // throw new exception(); // Reminder: Add custom exceptions
             return null;
         }
         // Parse json to on object for easy access, skipped classes

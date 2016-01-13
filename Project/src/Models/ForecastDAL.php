@@ -16,16 +16,21 @@ class ForecastDAL
         if ($stmt = $conn->prepare("SELECT * FROM travelapp_forecasts WHERE (lat = ? AND lng = ? AND forecast_time = ?)")) {
             $stmt->bind_param('sss', $location->lat, $location->lng, $datetime);
             $stmt->execute();
-            $stmt->bind_result($id, $location, $lat, $lng, $forecastTime, $temperature, $icon, $description);
+            $stmt->bind_result($id, $forecastLocation, $lat, $lng, $forecastTime, $temperature, $icon, $description);
             while ($stmt->fetch()) {
-                $forecast =  (object) [ "forecastTime" => $forecastTime, "temperature" => $temperature, "icon" => $icon, "description" => $description ];
+                $forecast =  (object) [
+                    "locationName" => $location->name,
+                    "forecastTime" => $forecastTime,
+                    "temperature" => $temperature,
+                    "icon" => $icon,
+                    "description" => $description
+                ];
             }
         }
         $conn->close();
 
         return $forecast;
     }
-
 
     /**
      * Multiple insertion query, note: security
@@ -40,7 +45,7 @@ class ForecastDAL
         // Prepare query for multiple entries
         foreach ($forecasts as $forecast)
         {
-            $sql .= "('$forecast->location', '$location->lat', '$location->lng', '$forecast->forecastTime',
+            $sql .= "('$location->toponymName', '$location->lat', '$location->lng', '$forecast->forecastTime',
              $forecast->temperature, '$forecast->icon', '$forecast->description'), ";
         }
         // Remove the trailing ", "

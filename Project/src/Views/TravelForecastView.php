@@ -59,8 +59,6 @@ class TravelForecastView
      */
     public function getDateTime()
     {
-        $timeStr = "";
-
         // Get departure or arrival time
         $hour = $this->travelByDeparture() ? $this->getDestinationHour() :  $this->getArrivalHour();
         $minute = $this->travelByDeparture() ? $this->getDestinationMinute() :  $this->getArrivalMinute();
@@ -145,26 +143,16 @@ class TravelForecastView
         return $html .= "</div>";
     }
 
-    // Prep the cache with new forecasts
-    public function setCacheLocations($cache, $locations)
+    /**
+     * Prep the cache with new locations and forecasts
+     *
+     * @param $locations
+     * @param $forecasts
+     */
+    public function prepareCache($locations, $forecasts)
     {
-        var_dump($cache);
-        echo '<br><br>';
-        var_dump($locations);
-        echo '<br><br>';
-
-        $this->cacheLocations = json_encode($locations);
-    }
-
-    // Prep the cache with new forecasts
-    public function setCacheForecasts($cache, $forecasts)
-    {
-        var_dump($cache);
-        echo '<br><br>';
-        var_dump($forecasts);
-        echo '<br><br>';
-
-        $this->cacheForecasts = json_encode($forecasts);
+        $this->cacheLocations = json_encode($locations) ? json_encode($locations) : "damnåäö";
+        $this->cacheForecasts = json_encode($forecasts) ? json_encode($forecasts) : "damnåäö";
     }
 
     /**
@@ -315,8 +303,8 @@ class TravelForecastView
     private function addHiddenFieldForCache()
     {
         return "
-            <div id=\"temp-locations\">$this->cacheLocations</div>
-            <div id=\"temp-forecasts\">$this->cacheForecasts</div>
+            <div hidden id=\"temp-locations\">$this->cacheLocations</div>
+            <div hidden id=\"temp-forecasts\">$this->cacheForecasts</div>
         ";
     }
 
@@ -389,20 +377,4 @@ class TravelForecastView
     private function getDestinationMinute() { return isset($_POST['dM']) ? trim($_POST['dM']) : ""; }
     private function getArrivalHour()       { return isset($_POST['aH']) ? trim($_POST['aH']) : ""; }
     private function getArrivalMinute()     { return isset($_POST['aM']) ? trim($_POST['aM']) : ""; }
-
-    /**
-     * Issues with åäö presentation, postponed
-     *
-     * @return string
-     */
-    private function getOriginToponymName()
-    {
-        $location = $this->model->getOriginLocation();
-        return $location !== null ? $location->toponymName : "";
-    }
-    private function getDestinationToponymName()
-    {
-        $location = $this->model->getDestinationLocation();
-        return $location !== null ? $location->toponymName : "";
-    }
 }

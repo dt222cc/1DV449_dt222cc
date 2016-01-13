@@ -23,7 +23,7 @@ var app = {
                         locations: locationsLocal,
                         forecasts: forecastsLocal
                     },
-                    success: function(data) {
+                    success: function() {
                         console.log("success, ajax");
                     },
                     error: function ()
@@ -53,19 +53,18 @@ var app = {
                 locations.remove();
                 forecasts.remove();
 
-                // Do check if it's new or not, a comparison
-                if (localStorage.getItem('storedLocations') != newLocations) {
-                    console.log('Refreshing locations.');
-                    console.log(newLocations);
+                // Refresh when new and has not been broken by åäö
+                var localLocations = localStorage.getItem('storedLocations');
+                if (localLocations != newLocations && newLocations != null && newLocations != "damnåäö") {
+                    console.log('Refreshed locations.');
                     localStorage.setItem('storedLocations', newLocations);
                 }
                 if (localStorage.getItem('storedForecasts') != newForecasts) {
-                    console.log('Refreshing forecasts.');
-                    console.log(newForecasts);
+                    console.log('Refreshed forecasts.');
                     localStorage.setItem('storedForecasts', newForecasts);
                 }
             } else {
-                console.log('Do not refresh cache.');
+                console.log('Skip refreshing cache.');
             }
         } else {
             console.log("No local storage support on this browser.")

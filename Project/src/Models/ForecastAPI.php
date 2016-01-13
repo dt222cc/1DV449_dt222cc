@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Openweathermap
+ * OpenWeatherMap
  */
 class ForecastAPI {
     /**
@@ -10,7 +10,7 @@ class ForecastAPI {
      * @param object
      * @return object[] | null
      */
-    public function getForecast($location, $forecastTime)
+    public function getForecasts($location, $forecastTime)
     {
         $lat = $location->lat;
         $lng = $location->lng;
@@ -25,7 +25,7 @@ class ForecastAPI {
 
         // Throw exception if connection failed on no search results
         if ( $data === "" || $data === null /* Perhaps something else, when I get to it */) {
-            // throw new exception(); // Reminder: Add custom execeptions
+            // throw new exception(); // Reminder: Add custom exceptions
             return null;
         }
 
@@ -38,10 +38,10 @@ class ForecastAPI {
 
         // The logic here should be okay, the first forecasts is the current day, which is what i keep
         foreach ($json->list as $forecast) {
-            // Only retrieve todays forecasts
+            // Only retrieve today's forecasts
             if (explode('-', explode(' ', $forecast->dt_txt)[0])[2] === $selectedDay) {
                 $object = new stdClass();
-                $object->location = $location->toponymName;
+                $object->locationName = $location->name;
                 $object->forecastTime = $forecast->dt_txt;
                 $object->temperature = $forecast->main->temp;
                 $object->icon = $forecast->weather[0]->icon;

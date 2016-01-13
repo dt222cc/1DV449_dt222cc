@@ -1,9 +1,9 @@
 <?php
 
-require_once("Models/LocationDAL.php");
-require_once("Models/LocationAPI.php");
-require_once("Models/ForecastDAL.php");
-require_once("Models/ForecastAPI.php");
+require_once("LocationDAL.php");
+require_once("LocationAPI.php");
+require_once("ForecastDAL.php");
+require_once("ForecastAPI.php");
 
 class TravelForecastModel
 {
@@ -17,7 +17,7 @@ class TravelForecastModel
     private $destinationForecast;
 
     /**
-     * Initialized the data access layers and webservices
+     * Initialized the data access layers and webservice
      */
     public function __construct()
     {
@@ -50,43 +50,25 @@ class TravelForecastModel
     }
 
     /**
-     * Get and set the locations
+     * Setters for the view
      *
-     * @param string, string
-     * @return boolean
+     * @return object
      */
-    public function getLocations($originName, $destinationName)
+    public function setOriginLocation($location)
     {
-        $this->originLocation = $this->getLocation($originName);
-        if ($this->originLocation === null) {
-            return null;
-        }
-        $this->destinationLocation = $this->getLocation($destinationName);
-        if ($this->destinationLocation === null) {
-            return null;
-        }
-        return array($this->originLocation, $this->destinationLocation);
+        $this->originLocation = $location;
     }
-
-    /**
-     * Get and set the forecasts
-     *
-     * @param string
-     * @return boolean
-     */
-    public function getForecasts($forecastTime)
+    public function setDestinationLocation($location)
     {
-        $this->originForecast = $this->getForecast($this->getOriginLocation(), $forecastTime);
-        if ($this->originForecast === null) {
-            return null;
-        }
-        $this->destinationForecast = $this->getForecast($this->getDestinationLocation(), $forecastTime);
-        if ($this->destinationForecast === null) {
-            return null;
-
-        }
-        return array($this->originForecast, $this->destinationForecast);
-
+        $this->destinationLocation = $location;
+    }
+    public function setOriginForecast($forecast)
+    {
+        $this->originForecast = $forecast;
+    }
+    public function setDestinationForecast($forecast)
+    {
+        $this->destinationForecast = $forecast;
     }
 
     /**
@@ -131,15 +113,13 @@ class TravelForecastModel
      */
     public function getForecast($location, $forecastTime)
     {
-        echo '</br></br>';
-        var_dump($location->toponymName);
         // Try to get forecast from the database
         echo '</br></br>Trying to get forecasts from the database. ';
         $forecast = $this->forecastDAL->getForecast($location, $forecastTime);
         // Get from webservice if no match
         if ($forecast === null) {
             echo 'Not found in the database, trying the webservice. ';
-            $forecasts = $this->forecastAPI->getForecast($location, $forecastTime);
+            $forecasts = $this->forecastAPI->getForecasts($location, $forecastTime);
             // If webservice is down or issue with the query
             if ($forecasts === null) {
                 echo 'Not found in the the webservice. Try again later or try another search. ';

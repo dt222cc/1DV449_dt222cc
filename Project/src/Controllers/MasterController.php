@@ -3,21 +3,18 @@
 class MasterController
 {
     /**
-     * @var /Models/TravelForecastModel
+     * @var TravelForecastModel
+     * @var TravelForecastView
      */
     private $model;
-
-    /**
-     * @var /Views/TravelForecastView
-     */
     private $view;
 
     /**
-     * Dependency injection
-     *
-     * @param /Views/TravelForecastModel, /Views/TravelForecastView
+     * MasterController constructor.
+     * @param TravelForecastModel $model
+     * @param TravelForecastView $view
      */
-    public function __construct(TravelForecastModel $m, TravelForecastView $v)
+    public function __construct(TravelForecastModel $model, TravelForecastView $view)
     {
         // Prep session variables to pass variables between PHP and JavaScript
         if ($_SESSION["locations"] === null) {
@@ -27,74 +24,178 @@ class MasterController
             $_SESSION["forecasts"] = "";
         }
 
-        $this->model = $m;
-        $this->view = $v;
+        $this->model = $model;
+        $this->view = $view;
     }
 
     /**
-     * Handle the flow of the service
+     * Handle the flow of the service, decide between cache and database/webservice
      */
     public function doTravelForecastService()
     {
         // If form has been submitted and passed the validation
         if ($this->view->didUserSubmitForm() && $this->view->validateFields()) {
             // ...get locations and forecasts from the cache which was passed on to SESSION
-            $locations =  $_SESSION['locations'];
-            $forecasts = $_SESSION['forecasts'];
+            $cacheLocations = json_decode($_SESSION['locations']);
+            $cacheForecasts = json_decode($_SESSION['forecasts']);
 
-            // Control
-            echo 'Data from Session: <br>';
-            var_dump($locations);
-            echo '<br>';
-            var_dump($forecasts);
-            echo '<br>';
+            $oLocation = $dLocation = $oForecast = $dForecast = null;
 
-            // Use cache if it exists
-            if ($locations !== "" && $forecasts !== "") { // Might split this
-                echo '$_SESSION have locations and forecasts. ';
-                // Do try to get location and forecasts out of the cache
+            // Do check with empty cache
 
-                // If no match do the database/webservice
-                $this->getFromDbWebservice($locations, $forecasts);
+            try {
+                // Get location names
+                $dLocationName = $this->view->getDestination();
+                $oLocationName = $this->view->getOrigin();
+                // If locations from cache is available
+                if ($cacheLocations !== "" && $cacheLocations !== null) {
+                    // 1.1 Cache
+                    $oLocation = $this->getLocationFromCache($oLocationName, $cacheLocations);
+                    if ($oLocation === null) {
+                        // 1.2 Database/Webservice
+                        $oLocation = $this->model->getLocation($oLocationName);
+                        if ($oLocation === null) {
+                            throw new Exception();
+                        }
+                    }
+                    // 2.1 Cache
+                    $dLocation = $this->getLocationFromCache($dLocationName, $cacheLocations);
+                    if ($dLocation === null) {
+                        // 2.2 Database/Webservice
+                        $dLocation = $this->model->getLocation($dLocationName);
+                        if ($dLocation === null) {
+                            throw new Exception();
+                        }
+                    }
+                } else {
+                    $oLocation = $this->model->getLocation($oLocationName);
+                    $dLocation = $this->model->getLocation($dLocationName);
+                }
 
-                // Note: probably have to alter location/forecast structure for access (search)
+                // Get datetime
+                $forecastTime = $this->view->getDateTime();
+                // If forecasts from cache is available (similar format as above)
+                if ($cacheForecasts !== "" && $cacheForecasts !== null) {
+                    // 1. Get forecast for origin
+                    $oForecast = $this->getForecastFromCache($oLocation, $forecastTime, $cacheForecasts);
+                    if ($oForecast === null) {
+                        $oForecast = $this->model->getForecast($oLocation, $forecastTime);
+                        if ($oForecast === null) {
+                            throw new Exception();
+                        }
+                    }
+                    // 2. Get forecast for destination
+                    $dForecast = $this->getForecastFromCache($dLocation, $forecastTime, $cacheForecasts);
+                    if ($dForecast === null) {
+                        $dForecast = $this->model->getForecast($dLocation, $forecastTime);
+                        if ($dForecast === null) {
+                            throw new Exception();
+                        }
+                    }
+                } else {
+                    $oForecast = $this->model->getForecast($oLocation, $forecastTime);
+                    $dForecast = $this->model->getForecast($dLocation, $forecastTime);
+                }
+
+                // Locations and forecasts have been retrieved from either the cache, database or webservice
+
+                // So the php view can populate the forecasts
+                $this->model->setOriginLocation($oLocation);
+                $this->model->setDestinationLocation($dLocation);
+                $this->model->setOriginForecast($oForecast);
+                $this->model->setDestinationForecast($dForecast);
+
+                // To save cache, a part of the solution (render to view for javascript to pick up and delete element)
+                $this->saveCache($oLocation, $dLocation, $oForecast, $dForecast, $cacheLocations, $cacheForecasts);
             }
-            // Else use database (need to refactor)
-            else {
-                echo '$_SESSION does not have locations and forecasts. ';
-                $this->getFromDbWebservice($locations, $forecasts);
+            catch (Exception $e) {
+                // Location/s and/or forecast/s is missing, abort
+                echo 'ABANDON!!!!';
             }
-
-            // Need to upgrade exception handling
         }
     }
 
     /**
-     * Placeholder
+     * @param $targetLocation string
+     * @param $locations object[]
+     * @return object | null
      */
-    private function getFromDbWebservice($cacheLocations, $cacheForecasts)
+    private function getLocationFromCache($targetLocation, $locations)
     {
-        // Might have to refactor this, do this if no cache 'or' no match in cache
-        // ...no match from the cache, get from the database/webservice
-        $locations = $this->model->getLocations($this->view->getOrigin(), $this->view->getDestination());
-        if ($locations !== null) {
-            echo 'Locations pass! ';
-            // ...get forecasts (same as above, locations)
-            $forecasts = $this->model->getForecasts($this->view->getDateTime());
-            if ($forecasts !== null) {
-                echo 'Forecasts pass! ';
+        foreach($locations as $location){
+            if ($location->name === $targetLocation) {
+                return $location;
+            }
+        }
+        return null;
+    }
 
-                // Prep for local storage refresh
-                $this->view->setCacheLocations($cacheLocations, $locations);
-                $this->view->setCacheForecasts($cacheForecasts, $forecasts);
-            }
-            else {
-                // ...something for error presentation
-                echo 'Forecasts fail! ';
+    /**
+     * @param $location object
+     * @param $forecastTime string
+     * @param $forecasts object[]
+     * @return object | null
+     */
+    private function getForecastFromCache($location, $forecastTime, $forecasts)
+    {
+        foreach($forecasts as $forecast) {
+            if($forecast->forecastTime === $forecastTime &&
+                $forecast->locationName === $location->name)
+            {
+                return $forecast;
             }
         }
-        else {
-            echo 'Locations fail! ';
+        return null;
+    }
+
+    /**
+     * Insert new entries to the cache
+     *
+     * @param $oLocation object
+     * @param $dLocation object
+     * @param $oForecast object
+     * @param $dForecast object
+     * @param $cacheLocations object[]
+     * @param $cacheForecasts object[]
+     */
+    private function saveCache($oLocation, $dLocation, $oForecast, $dForecast, $cacheLocations, $cacheForecasts)
+    {
+        // Add by default, changes to false if already exists
+        $addOL =  $addDL =  $addOF =  $addDF = true;
+
+        if ($cacheLocations !== null && $cacheLocations !== "") {
+            foreach($cacheLocations as $location) {
+                if ($location->name === $oLocation->name) { $addOL = false; }
+                if ($location->name === $dLocation->name) { $addDL = false; }
+            }
+        } else {
+            $cacheLocations = array();
         }
+
+        if ($cacheForecasts !== null && $cacheForecasts !== "") {
+            foreach($cacheForecasts as $forecast) {
+                if ($forecast->locationName === $oForecast->locationName &&
+                    $forecast->forecastTime === $oForecast->forecastTime)
+                {
+                    $addOF = false;
+                }
+                if ($forecast->locationName === $dForecast->locationName &&
+                    $forecast->forecastTime === $dForecast->forecastTime)
+                {
+                    $addDF = false;
+                }
+            }
+        } else {
+            $cacheForecasts = array();
+        }
+
+        if ($addOL) { $cacheLocations[] = $oLocation; }
+        if ($addDL) { $cacheLocations[] = $dLocation; }
+        if ($addOF) { $cacheForecasts[] = $oForecast; }
+        if ($addDF) { $cacheForecasts[] = $dForecast; }
+
+        $this->view->prepareCache($cacheLocations, $cacheForecasts);
+
+        // Copy paste for the win.. and some stuff to make it more compact
     }
 }
