@@ -38,29 +38,63 @@ class MasterController
     {
         // If form has been submitted and passed the validation
         if ($this->view->didUserSubmitForm() && $this->view->validateFields()) {
-            // ...get location from cache
-            var_dump($_SESSION['locations']);
-            var_dump($_SESSION['forecasts']);
+            // ...get locations and forecasts from the cache which was passed on to SESSION
+            $locations =  $_SESSION['locations'];
+            $forecasts = $_SESSION['forecasts'];
 
-            // ...no match from the cache, get from the database/webservice
-            $re = $this->model->getLocations($this->view->getOrigin(), $this->view->getDestination());
-            if ($re === true) {
-                echo 'Locations pass! ';
-                // ...get forecasts (same as above, locations)
-                $re = $this->model->getForecasts($this->view->getDateTime());
-                if ($re === false) {
-                    // ...something for error presentation
-                    echo ' Forecasts fail! ';
-                }
-                else {
-                    echo 'Forecasts pass! ';
-                }
+            // Control
+            echo 'Data from Session: <br>';
+            var_dump($locations);
+            echo '<br>';
+            var_dump($forecasts);
+            echo '<br>';
+
+            // Use cache if it exists
+            if ($locations !== "" && $forecasts !== "") { // Might split this
+                echo '$_SESSION have locations and forecasts. ';
+                // Do try to get location and forecasts out of the cache
+
+                // If no match do the database/webservice
+                $this->getFromDbWebservice($locations, $forecasts);
+
+                // Note: probably have to alter location/forecast structure for access (search)
             }
+            // Else use database (need to refactor)
             else {
-                echo 'Locations fail! ';
+                echo '$_SESSION does not have locations and forecasts. ';
+                $this->getFromDbWebservice($locations, $forecasts);
             }
 
             // Need to upgrade exception handling
+        }
+    }
+
+    /**
+     * Placeholder
+     */
+    private function getFromDbWebservice($cacheLocations, $cacheForecasts)
+    {
+        // Might have to refactor this, do this if no cache 'or' no match in cache
+        // ...no match from the cache, get from the database/webservice
+        $locations = $this->model->getLocations($this->view->getOrigin(), $this->view->getDestination());
+        if ($locations !== null) {
+            echo 'Locations pass! ';
+            // ...get forecasts (same as above, locations)
+            $forecasts = $this->model->getForecasts($this->view->getDateTime());
+            if ($forecasts !== null) {
+                echo 'Forecasts pass! ';
+
+                // Prep for local storage refresh
+                $this->view->setCacheLocations($cacheLocations, $locations);
+                $this->view->setCacheForecasts($cacheForecasts, $forecasts);
+            }
+            else {
+                // ...something for error presentation
+                echo 'Forecasts fail! ';
+            }
+        }
+        else {
+            echo 'Locations fail! ';
         }
     }
 }

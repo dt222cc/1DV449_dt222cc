@@ -59,13 +59,13 @@ class TravelForecastModel
     {
         $this->originLocation = $this->getLocation($originName);
         if ($this->originLocation === null) {
-            return false;
+            return null;
         }
         $this->destinationLocation = $this->getLocation($destinationName);
         if ($this->destinationLocation === null) {
-            return false;
+            return null;
         }
-        return true;
+        return array($this->originLocation, $this->destinationLocation);
     }
 
     /**
@@ -78,13 +78,15 @@ class TravelForecastModel
     {
         $this->originForecast = $this->getForecast($this->getOriginLocation(), $forecastTime);
         if ($this->originForecast === null) {
-            return false;
+            return null;
         }
         $this->destinationForecast = $this->getForecast($this->getDestinationLocation(), $forecastTime);
         if ($this->destinationForecast === null) {
-            return false;
+            return null;
+
         }
-        return true;
+        return array($this->originForecast, $this->destinationForecast);
+
     }
 
     /**

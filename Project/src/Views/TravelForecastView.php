@@ -9,14 +9,17 @@ class TravelForecastView
      */
     private $model;
 
+    private $cacheLocations;
+    private $cacheForecasts;
+
     /**
-     * Dependency injection, use somekind of model to build HTML from, else cache
+     * Dependency injection, use some kind of model to build HTML from, else cache
      *
      * @param /View/TravelForecastModel
      */
-    public function __construct(TravelForecastModel $m)
+    public function __construct(TravelForecastModel $model)
     {
-        $this->model = $m;
+        $this->model = $model;
     }
 
     /**
@@ -127,6 +130,7 @@ class TravelForecastView
                     $this->model->getDestinationForecast() !== null && $this->model->getOriginForecast() !== null)
                 {
                     $html .= $this->getForecastHTML();
+                    $html .= $this->addHiddenFieldForCache();
                 } else {
                     // $html .= $this->getErrorMessages();
                 }
@@ -141,8 +145,30 @@ class TravelForecastView
         return $html .= "</div>";
     }
 
+    // Prep the cache with new forecasts
+    public function setCacheLocations($cache, $locations)
+    {
+        var_dump($cache);
+        echo '<br><br>';
+        var_dump($locations);
+        echo '<br><br>';
+
+        $this->cacheLocations = json_encode($locations);
+    }
+
+    // Prep the cache with new forecasts
+    public function setCacheForecasts($cache, $forecasts)
+    {
+        var_dump($cache);
+        echo '<br><br>';
+        var_dump($forecasts);
+        echo '<br><br>';
+
+        $this->cacheForecasts = json_encode($forecasts);
+    }
+
     /**
-     * The first part of the app, form for locations & date submition
+     * The first part of the app, form for locations & date submission
      *
      * @return string HTML
      */
@@ -211,44 +237,45 @@ class TravelForecastView
         }
 
         return '
-        <div id="location-container">
-            <p style ="color:#ff0000"><b>'.$this->message.'</b></p>
-            <form method="post">
-                <div class="date">
-                    <label for="d">Dag: </label>
-                    <select id="d" name="d">'.$dayOptions.'</select>
-                    <label for="m">Månad: </label>
-                    <select id="m" name="m">'.$monthOptions.'</select>
-                    <label for="y">År: </label>
-                    <select id="y" name="y">'.$yearOptions.'</select>
+                <div id="location-container">
+                    <p style ="color:#ff0000"><b>'.$this->message.'</b></p>
+                    <form method="post">
+                        <div class="date">
+                            <label for="d">Dag: </label>
+                            <select id="d" name="d">'.$dayOptions.'</select>
+                            <label for="m">Månad: </label>
+                            <select id="m" name="m">'.$monthOptions.'</select>
+                            <label for="y">År: </label>
+                            <select id="y" name="y">'.$yearOptions.'</select>
+                        </div>
+                        <div class="time">
+                            <input type="radio" name="by" value="departure" checked=""><strong> Avgångstid</strong>
+                            <select id="dH" name="dH">'.$hours1.'</select><strong> : </strong>
+                            <select id="dM" name="dM">'.$minutes1.'</select>
+                        </div>
+                        <div class="time">
+                            <input type="radio" name="by" value="arrival"><strong> Ankomsttid</strong>
+                            <select id="aH" name="aH">'.$hours2.'</select><strong> : </strong>
+                            <select id="aM" name="aM">'.$minutes2.'</select>
+                        </div>
+                        <div>
+                            <label for="O"><strong>Från:</strong></label></br>
+                            <input type="text" id="O" name="O" autocomplete="off" size="20" value="'.$this->getOrigin().'">
+                        </div>
+                        <div>
+                            <label for="Z"<strong>Till:</strong></label></br>
+                            <input type="text" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
+                        </div>
+                        <div>
+                            <input type="submit" id="submit" name="s1" value="Skicka">
+                        </div>
+                    </form>
                 </div>
-                <div class="time">
-                    <input type="radio" name="by" value="departure" checked=""><strong> Avgångstid</strong>
-                    <select id="dH" name="dH">'.$hours1.'</select><strong> : </strong>
-                    <select id="dM" name="dM">'.$minutes1.'</select>
-                </div>
-                <div class="time">
-                    <input type="radio" name="by" value="arrival"><strong> Ankomsttid</strong>
-                    <select id="aH" name="aH">'.$hours2.'</select><strong> : </strong>
-                    <select id="aM" name="aM">'.$minutes2.'</select>
-                </div>
-                <div>
-                    <label for="O"><strong>Från:</strong></label></br>
-                    <input type="text" id="O" name="O" autocomplete="off" size="20" value="'.$this->getOrigin().'">
-                </div>
-                <div>
-                    <label for="Z"<strong>Till:</strong></label></br>
-                    <input type="text" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
-                </div>
-                <div>
-                    <input type="submit" id="submit" name="s1" value="Skicka">
-                </div>
-            </form>
-        </div>';
+            ';
     }
 
     /**
-     * Third part of the app, the forecast presentation (Note: Split into new View?)
+     * The forecast presentation
      *
      * @return string HTML
      */
@@ -261,12 +288,12 @@ class TravelForecastView
 
         // Missing the part of time, opted to not include it because of the lack of traint-times which results in no way of establishing arrival time
         return '
-        <div id="forecast-containter">
+        <div id="forecasts-container">
             <div class="forecast">
                 <h3>Vädret i '.$oL->toponymName.' <span class="weather-coordinates">(Lat: '.$oL->lat.', Lng: '.$oL->lng.')</span></h3>
                 <div>Beskrivning: '.$oF->description.'</div>
                 <div class="weather-symbol">
-                    <img alt="weather description image" src="/project/Content/images/'.$oF->icon.'.png" />
+                    <img alt="weather description image" src="/project/src/Content/images/'.$oF->icon.'.png" />
                 </div>
                 <div class="weather-temperature">'.$oF->temperature.' &#8451;</div>
             </div>
@@ -274,11 +301,23 @@ class TravelForecastView
                 <h3>Vädret i '.$dL->toponymName.' <span class="weather-coordinates">(Lat: '.$dL->lat.', Lng: '.$dL->lng.')</span></h3>
                 <div>Beskrivning: '.$dF->description.'</div>
                 <div class="weather-symbol">
-                    <img alt="weather description image" src="/project/Content/images/'.$dF->icon.'.png" />
+                    <img alt="weather description image" src="/project/src/Content/images/'.$dF->icon.'.png" />
                 </div>
                 <div class="weather-temperature">'.$dF->temperature.' &#8451;</div>
             </div>
-        </div>';
+        </div>
+        ';
+    }
+
+    /**
+     * @return string
+     */
+    private function addHiddenFieldForCache()
+    {
+        return "
+            <div id=\"temp-locations\">$this->cacheLocations</div>
+            <div id=\"temp-forecasts\">$this->cacheForecasts</div>
+        ";
     }
 
     /**
@@ -288,7 +327,6 @@ class TravelForecastView
      */
     private function validateTime()
     {
-        // Validate departure or arrival time
         return $this->travelByDeparture() ?
             is_numeric($this->getDestinationHour()) && is_numeric($this->getDestinationMinute()) :
             is_numeric($this->getArrivalHour()) && is_numeric($this->getArrivalMinute());
@@ -319,7 +357,7 @@ class TravelForecastView
     }
 
     /**
-     * Remove characters that are not allowed
+     * Only keep characters that are allowed
      *
      * @param string
      * @return string
@@ -368,6 +406,3 @@ class TravelForecastView
         return $location !== null ? $location->toponymName : "";
     }
 }
-
-// Do add a reset button, if using get
-// Swap out textfield values to the actual name of the location, "Kalmar" should be replaced with "Kalmar Centralstation", postponed
