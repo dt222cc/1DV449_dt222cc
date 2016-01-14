@@ -185,7 +185,7 @@ class MasterController
         if ($addOF) { $cacheForecasts[] = $oForecast; }
         if ($addDF) { $cacheForecasts[] = $dForecast; }
 
-        $this->view->prepareCache($cacheLocations, $cacheForecasts);
+        $this->view->setCacheData($cacheLocations, $cacheForecasts);
 
         // Copy paste for the win.. and some stuff to make it more compact
     }

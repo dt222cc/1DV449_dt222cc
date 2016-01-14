@@ -50,9 +50,7 @@ class TravelForecastModel
     }
 
     /**
-     * Setters for the view
-     *
-     * @return object
+     * Setters for the controller
      */
     public function setOriginLocation($location)
     {

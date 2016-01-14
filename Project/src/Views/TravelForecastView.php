@@ -29,7 +29,7 @@ class TravelForecastView
      * @param $locations
      * @param $forecasts
      */
-    public function prepareCache($locations, $forecasts)
+    public function setCacheData($locations, $forecasts)
     {
         $this->cacheLocations = json_encode($locations) ? json_encode($locations) : "damnåäö";
         $this->cacheForecasts = json_encode($forecasts) ? json_encode($forecasts) : "damnåäö";
@@ -233,6 +233,7 @@ class TravelForecastView
         }
 
         return '
+                <h2>Väder jämförelse</h2>
                 <div id="location-container">
                     <p style ="color:#ff0000"><b>'.$this->message.$this->serviceErrorMessage.'</b></p>
                     <form method="post">
@@ -248,16 +249,16 @@ class TravelForecastView
                             <select id="y" name="y">'.$yearOptions.'</select>
                         </div>
                         <div>
-                            <label for="O"><strong>Från:</strong></label></br>
+                            <label for="O"><strong>Plats 1:</strong></label></br>
                             <input type="text" id="O" name="O" autocomplete="off" size="20" value="'.$this->getOrigin().'">
                         </div>
                         <div>
-                            <label for="Z"<strong>Till:</strong></label></br>
+                            <label for="Z"<strong>Plats 2:</strong></label></br>
                             <input type="text" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
                         </div>
                         <div>
                             <br>
-                            <input type="submit" id="submit" name="s1" value="Skicka">
+                            <input type="submit" id="submit" name="s1" value="Hämta prognos">
                         </div>
                     </form>
                 </div>
