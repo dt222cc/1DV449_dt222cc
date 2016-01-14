@@ -1,0 +1,20 @@
+MasterController
+http://yuml.me/edit/becbcbe4
+[MasterController|-model;-view;|DoTravelForecastService();GetLocationFromCache();GetForecastFromCache();SaveCache();]->[TravelForecastModel|-locationDAL;-forecastDAL;-locationAPI;-forecastAPI;-originLocation;-destinationLocation;-originForecast;-destinationForecast;|GetOriginLocation();GetDestinationLocation();GetOriginForecast();GetDestinationForecast();SetOriginLocation();SetDestinationLocation();SetOriginForecast();SetDestinationForecast();GetLocation();GetForecast();]
+
+[MasterController]->[TravelForecastView|DidUserSubmitForm();ValidateFields();GetOrigin();GetDestination();GetDateTime();SetCacheData();SetErrorMessage();]
+
+[TravelForecastModel]->[LocationDAL|GetLocation();SaveLocation();]
+[TravelForecastModel]->[ForecastDAL|GetForecast();SaveForecasts();]
+[TravelForecastModel]->[LocationAPI|GetLocation();]
+[TravelForecastModel]->[ForecastAPI|GetForecasts()]
+
+Presentation
+http://yuml.me/edit/64e7bf79
+[Index.php|m-travelForecastModel;v-travelForecastView;c-masterController;lv-layoutView;|c-DoTravelForecastService();lv-render(v);]->[LayoutView.php|render(travelForecastView)]
+[Index.php]->[TravelForecastView.php|-travelForecastModel;-message;-cacheLocations;-cacheForecasts;|GetResponse();-GetTravelHTML();-GetForecastHTML();-AddHiddenFieldForCache();DidUserSubmitForm();GetOrigin();GetDestination();GetDateTime();PrepareCache();SetErrorMessage();ValidateFields();-ValidateTime();-ValidateDate();-ContainsSpecialCharacters();-RemoveSomeSpecialCharacters();-GetDay();-GetMonth();-GetYear();-GetHours();-GetMinutes();]
+[Index.php]->[MasterController.php|DoTravelForecastService();]
+
+[LayoutView.php]-[note: Note 3:|Echos the html{bg:yellow}]
+[TravelForecastView.php]-[note: Note 2:|Build presentation html and return that to the LayoutView.;Getters for the controller (location names - formatted dates);Setters for the controller (error messages - data for cache);{bg:yellow}]
+[MasterController.php]-[note: Note 1:|Covered in Service diagram{bg:yellow}]
