@@ -88,8 +88,8 @@ class TravelForecastView
     public function getDateTime()
     {
         // Get departure or arrival time
-        $hour = $this->travelByDeparture() ? $this->getDestinationHour() :  $this->getArrivalHour();
-        $minute = $this->travelByDeparture() ? $this->getDestinationMinute() :  $this->getArrivalMinute();
+        $hour = $this->getHours();
+        $minute = $this->getMinutes();
 
         // Convert to int, so I can handle this logic better
         $time = intval($hour . sprintf( "%02d", $minute));
@@ -208,35 +208,27 @@ class TravelForecastView
         $yearOptions = "<option value=\"$currentYear\">$currentYear</option><option value=\"$nextYear\">$nextYear</option>";
 
         // Options for hour selection
-        $hours1 = ""; // Departure
-        $hours2 = ""; // Arrival
+        $hours = "";
         for ($i = 0; $i < 24; $i++) {
             $j = sprintf("%02d", $i); // Add a \0 if not two characters long: 0 > 00, 1 > 01, 10 still 10
             // If current hour, make "selected"
             if ($i === intval(date('G'))) {
-                $hours1 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
-                // Arrival hour offset, 1 hour later, use 0 instead of 24 if time == 23
-                $j = $i == 23 ? sprintf("%02d", 0) : sprintf("%02d", $i + 1);
-                $hours2 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
+                $hours .= '<option value="'.$i.'" selected="">'.$j.'</option>';
             }
             else {
-                $hours1 .= '<option value="'.$i.'">'.$j.'</option>';
-                $hours2 .= '<option value="'.$i.'">'.$j.'</option>';
+                $hours .= '<option value="'.$i.'">'.$j.'</option>';
             }
         }
 
         // Options for minutes selection, should be between 0 and 59
-        $minutes1 = ""; // Departure
-        $minutes2 = ""; // Arrival
+        $minutes = "";
         for ($i = 0; $i < 60; $i++) {
             $j = sprintf("%02d", $i);
             // If same as current minute, make "selected"
             if ($j === date('i')) {
-                $minutes1 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
-                $minutes2 .= '<option value="'.$i.'" selected="">'.$j.'</option>';
+                $minutes .= '<option value="'.$i.'" selected="">'.$j.'</option>';
             } else {
-                $minutes1 .= '<option value="'.$i.'">'.$j.'</option>';
-                $minutes2 .= '<option value="'.$i.'">'.$j.'</option>';
+                $minutes .= '<option value="'.$i.'">'.$j.'</option>';
             }
         }
 
@@ -245,22 +237,15 @@ class TravelForecastView
                     <p style ="color:#ff0000"><b>'.$this->message.$this->serviceErrorMessage.'</b></p>
                     <form method="post">
                         <div class="date">
+                            <span><b>Tid: </b></span>
+                            <select id="hour" name="hour">'.$hours.'</select><strong> : </strong>
+                            <select id="minute" name="minute">'.$minutes.'</select>
                             <label for="d">Dag: </label>
                             <select id="d" name="d">'.$dayOptions.'</select>
                             <label for="m">Månad: </label>
                             <select id="m" name="m">'.$monthOptions.'</select>
                             <label for="y">År: </label>
                             <select id="y" name="y">'.$yearOptions.'</select>
-                        </div>
-                        <div class="time">
-                            <input type="radio" name="by" value="departure" checked=""><strong> Avgångstid</strong>
-                            <select id="dH" name="dH">'.$hours1.'</select><strong> : </strong>
-                            <select id="dM" name="dM">'.$minutes1.'</select>
-                        </div>
-                        <div class="time">
-                            <input type="radio" name="by" value="arrival"><strong> Ankomsttid</strong>
-                            <select id="aH" name="aH">'.$hours2.'</select><strong> : </strong>
-                            <select id="aM" name="aM">'.$minutes2.'</select>
                         </div>
                         <div>
                             <label for="O"><strong>Från:</strong></label></br>
@@ -271,6 +256,7 @@ class TravelForecastView
                             <input type="text" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
                         </div>
                         <div>
+                            <br>
                             <input type="submit" id="submit" name="s1" value="Skicka">
                         </div>
                     </form>
@@ -333,9 +319,7 @@ class TravelForecastView
      */
     private function validateTime()
     {
-        return $this->travelByDeparture() ?
-            is_numeric($this->getDestinationHour()) && is_numeric($this->getDestinationMinute()) :
-            is_numeric($this->getArrivalHour()) && is_numeric($this->getArrivalMinute());
+        return is_numeric($this->getHours()) && is_numeric($this->getMinutes());
     }
 
     /**
@@ -374,16 +358,6 @@ class TravelForecastView
     }
 
     /**
-     * Return true or false depending on which radio button was selected, departure or arrival
-     *
-     * @return boolean
-     */
-    private function travelByDeparture()
-    {
-        return isset($_POST['by']) ? $_POST['by'] : "" == "departure";
-    }
-
-    /**
      * Getters for the form data
      *
      * @return string
@@ -391,8 +365,6 @@ class TravelForecastView
     private function getDay()               { return isset($_POST['d'])  ? trim($_POST['d'])  : ""; }
     private function getMonth()             { return isset($_POST['m'])  ? trim($_POST['m'])  : ""; }
     private function getYear()              { return isset($_POST['y'])  ? trim($_POST['y'])  : ""; }
-    private function getDestinationHour()   { return isset($_POST['dH']) ? trim($_POST['dH']) : ""; }
-    private function getDestinationMinute() { return isset($_POST['dM']) ? trim($_POST['dM']) : ""; }
-    private function getArrivalHour()       { return isset($_POST['aH']) ? trim($_POST['aH']) : ""; }
-    private function getArrivalMinute()     { return isset($_POST['aM']) ? trim($_POST['aM']) : ""; }
+    private function getHours()             { return isset($_POST['hour']) ? trim($_POST['hour']) : ""; }
+    private function getMinutes()           { return isset($_POST['minute']) ? trim($_POST['minute']) : ""; }
 }
