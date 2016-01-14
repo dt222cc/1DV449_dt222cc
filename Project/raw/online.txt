@@ -1,13 +1,13 @@
 MasterController
-http://yuml.me/edit/becbcbe4
-[MasterController|-model;-view;|DoTravelForecastService();GetLocationFromCache();GetForecastFromCache();SaveCache();]->[TravelForecastModel|-locationDAL;-forecastDAL;-locationAPI;-forecastAPI;-originLocation;-destinationLocation;-originForecast;-destinationForecast;|GetOriginLocation();GetDestinationLocation();GetOriginForecast();GetDestinationForecast();SetOriginLocation();SetDestinationLocation();SetOriginForecast();SetDestinationForecast();GetLocation();GetForecast();]
+http://yuml.me/edit/a5289ac2
+[MasterController.php|-model;-view;|DoTravelForecastService();GetLocationFromCache();GetForecastFromCache();SaveCache();]->[TravelForecastModel.php|-locationDAL;-forecastDAL;-locationAPI;-forecastAPI;-originLocation;-destinationLocation;-originForecast;-destinationForecast;|GetOriginLocation();GetDestinationLocation();GetOriginForecast();GetDestinationForecast();SetOriginLocation();SetDestinationLocation();SetOriginForecast();SetDestinationForecast();GetLocation();GetForecast();]
 
-[MasterController]->[TravelForecastView|DidUserSubmitForm();ValidateFields();GetOrigin();GetDestination();GetDateTime();SetCacheData();SetErrorMessage();]
+[MasterController.php]->[TravelForecastView.php|DidUserSubmitForm();ValidateFields();GetOrigin();GetDestination();GetDateTime();SetCacheData();SetErrorMessage();]
 
-[TravelForecastModel]->[LocationDAL|GetLocation();SaveLocation();]
-[TravelForecastModel]->[ForecastDAL|GetForecast();SaveForecasts();]
-[TravelForecastModel]->[LocationAPI|GetLocation();]
-[TravelForecastModel]->[ForecastAPI|GetForecasts()]
+[TravelForecastModel.php]->[LocationDAL.php|GetLocation();SaveLocation();]
+[TravelForecastModel.php]->[ForecastDAL.php|GetForecast();SaveForecasts();]
+[TravelForecastModel.php]->[LocationAPI.php|GetLocation();]
+[TravelForecastModel.php]->[ForecastAPI.php|GetForecasts()]
 
 Presentation
 http://yuml.me/edit/64e7bf79

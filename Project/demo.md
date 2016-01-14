@@ -11,16 +11,15 @@ När man först laddar sidan ser man ett formulär där man väljer tid, datum o
 ![demo bild 1](raw/demo1.png)
 
 <pre>
-Datum och tid är förvalt till dagens datum och aktuell tid,
-dessa fälter formateras sedan för att passa med API:et OpenWeatherMap
+Datum och tid är förvalt till dagens datum och aktuell tid, dessa fälter formateras sedan för att passa
+med API:et OpenWeatherMap
+
+Datum och tid måste vara nu eller upp till fem dagar frammåt, pga OpenWeatherMap's begränsningar.
+
+Dock om man har gjort en "giltig" sökning tidigare och att den finns kvar i cachen eller i databasen,
+så kan man få fram prognosen.
 
 De två text fälterna har validering, tomma fälter och ej speciella tecken.
-
-Datum och tid måste vara nu eller upp till fem dagar frammåt,
-då OpenWeatherMap's API ej visar utdaterade prognoser.
-
-Dock om man har gjort en "giltig" sökning tidigare och att
-den finns kvar i cachen eller i databasen, så kan man få fram prognosen.
 </pre>
 ***
 En lyckad resultat kan se ut så här:
@@ -28,11 +27,9 @@ En lyckad resultat kan se ut så här:
 ![demo bild 2](raw/demo2.png)
 
 <pre>
-Notera att den angivna tiden konverteras till tre timmars prognos i samband med
-formatteringen.
+Notera att den angivna tiden konverteras till tre timmars prognos i samband med formatteringen.
 
-Det finns mycket att förbättra, angående design och prognosernas omfattning,
-t.o.m cache lösningen.
+Det finns mycket att förbättra, angående design och prognosernas omfattning, t.o.m cache lösningen.
 </pre>
 ***
 Om en sökning lyckades inte att hämta plats eller prognos från respektiv API, så ska det presenteras lite röd text för användaren. Dock så visas detta inte i den publicerade version till skillnad från den lokala versionen.

@@ -19,6 +19,9 @@ Api:er
 #Design/Schema
 #### Service/MasterController
 ![service classdiagram](raw/mastercontroller-design.png)
+
+***
+
 #### Index och Views
 ![index+view classdiagram](raw/presentation-design.png)
 
