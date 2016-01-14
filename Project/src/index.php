@@ -2,6 +2,7 @@
 
 // INCLUDE THE FILES NEEDED...
 require_once("Settings.php");
+require_once("Exceptions/NoResultsException.php");
 require_once("Models/TravelForecastModel.php");
 require_once("Views/LayoutView.php");
 require_once("Views/TravelForecastView.php");

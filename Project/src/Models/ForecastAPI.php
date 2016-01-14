@@ -50,7 +50,6 @@ class ForecastAPI {
             }
         }
 
-        // Todo: Handle days outside reach
         return $forecasts;
     }
 }

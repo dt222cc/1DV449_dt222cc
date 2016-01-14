@@ -40,6 +40,7 @@ class ForecastDAL
      */
     public function saveForecasts($location, $forecasts)
     {
+        $re = true;
         $sql = "INSERT INTO travelapp_forecasts (location, lat, lng, forecast_time, temperature, icon, description) VALUES ";
 
         // Prepare query for multiple entries
@@ -54,10 +55,10 @@ class ForecastDAL
         $conn = $this->establishConnection();
         if ($conn->query($sql) === false) {
             // echo "Error: " . $sql . "<br>" . $conn->error;
-            return false;
+            $re = false;
         }
         $conn->close();
-        return true;
+        return $re;
     }
 
     /**

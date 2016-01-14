@@ -3,6 +3,7 @@
 class TravelForecastView
 {
     private $message = "";
+    private $serviceErrorMessage = "";
 
     /**
      * @var /View/TravelForecastModel
@@ -22,6 +23,33 @@ class TravelForecastView
         $this->model = $model;
     }
 
+    /**
+     * Prep the cache with new locations and forecasts
+     *
+     * @param $locations
+     * @param $forecasts
+     */
+    public function prepareCache($locations, $forecasts)
+    {
+        $this->cacheLocations = json_encode($locations) ? json_encode($locations) : "damnåäö";
+        $this->cacheForecasts = json_encode($forecasts) ? json_encode($forecasts) : "damnåäö";
+    }
+
+    public function setErrorMessage($case)
+    {
+        $message = "";
+
+        switch ($case){
+            case 0:
+                $message = "Ett oväntat fel uppstod, försök igen senare eller ett nytt försök.";
+                break;
+            case 1:
+                $message = "Webbtjänsten kunde inte hitta plats eller prognos, kontrollera uppgifterna igen eller försök igen senare (webbtjänst kan vara nere).";
+                break;
+        }
+
+        $this->serviceErrorMessage = $message;
+    }
     /**
      * Accessor method, form submission
      *
@@ -144,18 +172,6 @@ class TravelForecastView
     }
 
     /**
-     * Prep the cache with new locations and forecasts
-     *
-     * @param $locations
-     * @param $forecasts
-     */
-    public function prepareCache($locations, $forecasts)
-    {
-        $this->cacheLocations = json_encode($locations) ? json_encode($locations) : "damnåäö";
-        $this->cacheForecasts = json_encode($forecasts) ? json_encode($forecasts) : "damnåäö";
-    }
-
-    /**
      * The first part of the app, form for locations & date submission
      *
      * @return string HTML
@@ -226,7 +242,7 @@ class TravelForecastView
 
         return '
                 <div id="location-container">
-                    <p style ="color:#ff0000"><b>'.$this->message.'</b></p>
+                    <p style ="color:#ff0000"><b>'.$this->message.$this->serviceErrorMessage.'</b></p>
                     <form method="post">
                         <div class="date">
                             <label for="d">Dag: </label>
@@ -279,6 +295,7 @@ class TravelForecastView
         <div id="forecasts-container">
             <div class="forecast">
                 <h3>Vädret i '.$oL->toponymName.' <span class="weather-coordinates">(Lat: '.$oL->lat.', Lng: '.$oL->lng.')</span></h3>
+                <div>'.$this->getDateTime().'</div>
                 <div>Beskrivning: '.$oF->description.'</div>
                 <div class="weather-symbol">
                     <img alt="weather description image" src="/project/src/Content/images/'.$oF->icon.'.png" />
@@ -287,6 +304,7 @@ class TravelForecastView
             </div>
             <div class="forecast">
                 <h3>Vädret i '.$dL->toponymName.' <span class="weather-coordinates">(Lat: '.$dL->lat.', Lng: '.$dL->lng.')</span></h3>
+                <div>'.$this->getDateTime().'</div>
                 <div>Beskrivning: '.$dF->description.'</div>
                 <div class="weather-symbol">
                     <img alt="weather description image" src="/project/src/Content/images/'.$dF->icon.'.png" />
@@ -352,7 +370,7 @@ class TravelForecastView
      */
     private function removeSomeSpecialCharacters($string)
     {
-        return preg_replace("/[^A-Za-z0-9åäöÅÄÖ]/", "", strip_tags($string));
+        return preg_replace("/[^A-Za-z0-9åäöÅÄÖ ]/", "", strip_tags($string));
     }
 
     /**

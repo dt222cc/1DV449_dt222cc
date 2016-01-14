@@ -34,21 +34,16 @@ class LocationDAL
      */
     public function saveLocation($location)
     {
-        try {
-            $conn = $this->establishConnection();
+        $conn = $this->establishConnection();
 
-            if ($stmt = $conn->prepare("INSERT INTO travelapp_locations (toponym_name, name, lat, lng) VALUES (?, ?, ?, ?)")) {
-                $stmt->bind_param('ssss', $location->toponymName, $location->name, $location->lat, $location->lng);
-                $stmt->execute();
-                $conn->close();
-                return true;
-            }
+        if ($stmt = $conn->prepare("INSERT INTO travelapp_locations (toponym_name, name, lat, lng) VALUES (?, ?, ?, ?)")) {
+            $stmt->bind_param('ssss', $location->toponymName, $location->name, $location->lat, $location->lng);
+            $stmt->execute();
             $conn->close();
-            throw new exception();
+            return true;
         }
-        catch (exception $e) {
-            return false;
-        }
+        $conn->close();
+        return false;
     }
 
     /**

@@ -41,8 +41,6 @@ class MasterController
 
             $oLocation = $dLocation = $oForecast = $dForecast = null;
 
-            // Do check with empty cache
-
             try {
                 // Get location names
                 $dLocationName = $this->view->getDestination();
@@ -54,18 +52,12 @@ class MasterController
                     if ($oLocation === null) {
                         // 1.2 Database/Webservice
                         $oLocation = $this->model->getLocation($oLocationName);
-                        if ($oLocation === null) {
-                            throw new Exception();
-                        }
                     }
                     // 2.1 Cache
                     $dLocation = $this->getLocationFromCache($dLocationName, $cacheLocations);
                     if ($dLocation === null) {
                         // 2.2 Database/Webservice
                         $dLocation = $this->model->getLocation($dLocationName);
-                        if ($dLocation === null) {
-                            throw new Exception();
-                        }
                     }
                 } else {
                     $oLocation = $this->model->getLocation($oLocationName);
@@ -80,24 +72,21 @@ class MasterController
                     $oForecast = $this->getForecastFromCache($oLocation, $forecastTime, $cacheForecasts);
                     if ($oForecast === null) {
                         $oForecast = $this->model->getForecast($oLocation, $forecastTime);
-                        if ($oForecast === null) {
-                            throw new Exception();
-                        }
                     }
                     // 2. Get forecast for destination
                     $dForecast = $this->getForecastFromCache($dLocation, $forecastTime, $cacheForecasts);
                     if ($dForecast === null) {
                         $dForecast = $this->model->getForecast($dLocation, $forecastTime);
-                        if ($dForecast === null) {
-                            throw new Exception();
-                        }
                     }
                 } else {
                     $oForecast = $this->model->getForecast($oLocation, $forecastTime);
                     $dForecast = $this->model->getForecast($dLocation, $forecastTime);
                 }
 
-                // Locations and forecasts have been retrieved from either the cache, database or webservice
+                // Do another check in case we missed something
+                if ($oLocation === null || $dLocation === null || $oForecast === null || $dForecast === null) {
+                    throw new NoResultsException();
+                }
 
                 // So the php view can populate the forecasts
                 $this->model->setOriginLocation($oLocation);
@@ -108,9 +97,11 @@ class MasterController
                 // To save cache, a part of the solution (render to view for javascript to pick up and delete element)
                 $this->saveCache($oLocation, $dLocation, $oForecast, $dForecast, $cacheLocations, $cacheForecasts);
             }
+            catch (NoResultsException $e) {
+                $this->view->setErrorMessage(1);
+            }
             catch (Exception $e) {
-                // Location/s and/or forecast/s is missing, abort
-                echo 'ABANDON!!!!';
+                $this->view->setErrorMessage(0);
             }
         }
     }
