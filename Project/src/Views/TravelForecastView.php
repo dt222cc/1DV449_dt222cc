@@ -269,7 +269,7 @@ class TravelForecastView
                     '.$this->getDateTime().'
                 </p>
                 <div class="weather-symbol">
-                    <img src="/project/src/Content/images/'.$oF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
+                    <img src="Content/images/'.$oF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
                 </div>
                 <div>'.ucfirst($oF->description).'</div><br>
                 <div class="weather-temperature">'.$oF->temperature.' &#8451;</div>
@@ -283,7 +283,7 @@ class TravelForecastView
                     '.$this->getDateTime().'
                 </p>
                 <div class="weather-symbol">
-                    <img src="/project/src/Content/images/'.$dF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
+                    <img src="Content/images/'.$dF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
                 </div>
                 <div>'.ucfirst($dF->description).'</div><br>
                 <div class="weather-temperature">'.$dF->temperature.' &#8451;</div>
