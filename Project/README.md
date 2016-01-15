@@ -1,7 +1,7 @@
 # Väder jämförelse
 - <b>Sing Trinh</b> (dt222cc - WP14)
 - [Publicerad körbar applikation](http://46.101.229.31/1dv449project/)
-- [Demonstration](https://github.com/dt222cc/1DV449_dt222cc/tree/master/Project/raw/demo.md)
+- [Demonstration](https://github.com/dt222cc/1DV449_dt222cc/tree/master/Project/demo.md)
 - [Kurshemsida](https://coursepress.lnu.se/kurs/webbteknik-ii/projektbeskrivning/)
 
 #Inledning
@@ -18,13 +18,9 @@ Api:er
 - Api OpenWeatherMap: Hämta prognoser efter koordinater.
 
 #Design/Schema
-#### Service/MasterController
-![service classdiagram](raw/mastercontroller-design.png)
+- [Service/MasterController - Klassdiagram](raw/mastercontroller-design.png)
+- [Index+view Klassdiagram](raw/presentation-design.png)
 
-***
-
-#### Index och Views
-![index+view classdiagram](raw/presentation-design.png)
 
 #Cache lösning
 Jag kör emot local storage om webbläsaren har stöd för det och en mysql databas med två tabeller. Det fungerar så att om webbläsaren har stöd för local storage och det finns sparade resultat där så kollar applikationen av om platsen/plateserna eller om prognosen finns där i cachen. Om det finns så körs ingenting emot databas eller API. Om det inte finns så görs ett kontroll i databasen och om den inte finns där så hämtar vi resultat från API, sedan sparas nya resultat i databas och cachen. Det finns optimeringar att göra för cachningen, stoppa in flera platser (kanske i bakgrunden, eller om användaren "vill" göra det så kan en knapp läggas till).
