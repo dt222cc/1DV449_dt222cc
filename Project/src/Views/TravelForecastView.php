@@ -87,15 +87,18 @@ class TravelForecastView
      */
     public function getDateTime()
     {
-        // Get departure or arrival time
+        $date = $this->getDate();
         $hour = $this->getHours();
         $minute = $this->getMinutes();
 
         // Convert to int, so I can handle this logic better
         $time = intval($hour . sprintf( "%02d", $minute));
-        $day = intval($this->getDay());
+
         // Depending on the time, convert to any of 00, 03, 06, 09, 12, 15, 18, 21 (coz of three hour forecasts from API)
-        if      ($time >= 2230)  { $timeStr = "00"; $day += 1; } // Can be issues when transitioning from month to month
+        if ($time >= 2230)  {
+            $timeStr = "00";
+            $date = date('Y-m-d',strtotime($date . "+1 days"));
+        }
         else if ($time >= 1930)  { $timeStr = "21"; }
         else if ($time >= 1630)  { $timeStr = "18"; }
         else if ($time >= 1330)  { $timeStr = "15"; }
@@ -105,18 +108,8 @@ class TravelForecastView
         else if ($time >= 130)   { $timeStr = "03"; }
         else                     { $timeStr = "00"; }
 
-        $today = getdate();
-        // Add hours to converted time if it went passed the current time (webservice do not keep old forecasts)
-        if ($today['mday'] === $day && intval($timeStr."00") < intval($today['hours'] . $today['minutes'])) {
-            // Add 3 hours to get the next forecast in line
-            $plus3 = intval($timeStr) + 3;
-            if ($plus3 === 24) {
-                $timeStr = "00";
-                $day += 1;
-            }
-        }
         // Format YYYY-MM-DD HH:MM:SS
-        return $this->getYear()."-".sprintf("%02d", $this->getMonth())."-".sprintf("%02d", $day) . " " . $timeStr . ":00:00";
+        return $date." " . $timeStr . ":00:00";
     }
 
     /**
@@ -130,7 +123,6 @@ class TravelForecastView
 
         if ($this->getOrigin() == "")                   { $this->message .= "Fältet för avgångsplats saknas<br>"; }
         if ($this->getDestination() == "")              { $this->message .= "Fältet för ankomstplats saknas<br>"; }
-        if ($this->validateDate() == false)             { $this->message .= "Fel format för datum<br>"; }
         if ($this->validateTime() == false)             { $this->message .= "Fel format för tid<br>"; }
         if ($this->containsSpecialCharacters() == true) { $this->message .= "Fält innehåller ogiltiga tecken<br>"; }
 
@@ -178,35 +170,6 @@ class TravelForecastView
      */
     private function getTravelHTML()
     {
-        // Options for day selection, 31 days, default selection: current day
-        $dayOptions = "";
-        for ($i = 1; $i <= 31; $i++) {
-            if ($i === intval(date('j'))) {
-                $dayOptions .= '<option value="'.$i.'" selected="">'.$i.'</option>';
-            }
-            else {
-                $dayOptions .= '<option value="'.$i.'">'.$i.'</option>';
-            }
-        }
-
-        // Options for month selection (note swedish month names)  12 months, default selection: current month
-        $monthOptions = "";
-        $months = [ "Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December" ];
-        for ($i = 1; $i <= 12; $i++) {
-            if ($i === intval(date('n'))) {
-                $monthOptions .= '<option value="'.$i.'" selected="">'.$months[$i - 1].'</option>';
-            }
-            else {
-                $monthOptions .= '<option value="'.$i.'">'.$months[$i - 1].'</option>';
-            }
-        }
-
-        // Options for year selection (current and next year)
-        $yearOptions = "";
-        $currentYear = date('o');
-        $nextYear = date('o',strtotime('+1 year'));
-        $yearOptions = "<option value=\"$currentYear\">$currentYear</option><option value=\"$nextYear\">$nextYear</option>";
-
         // Options for hour selection
         $hours = "";
         for ($i = 0; $i < 24; $i++) {
@@ -232,35 +195,53 @@ class TravelForecastView
             }
         }
 
+        $alertBox = "";
+        if ($this->message !== "" || $this->serviceErrorMessage !== "") {
+            $alertBox .= '
+                <div class="alert alert-danger" role="alert">
+                    '.$this->message.$this->serviceErrorMessage.'
+                </div>';
+        }
+
         return '
-                <h2>Väder jämförelse</h2>
                 <div id="location-container">
-                    <p style ="color:#ff0000"><b>'.$this->message.$this->serviceErrorMessage.'</b></p>
-                    <form method="post">
-                        <div class="date">
-                            <span><b>Tid: </b></span>
-                            <select id="hour" name="hour">'.$hours.'</select><strong> : </strong>
-                            <select id="minute" name="minute">'.$minutes.'</select>
-                            <label for="d">Dag: </label>
-                            <select id="d" name="d">'.$dayOptions.'</select>
-                            <label for="m">Månad: </label>
-                            <select id="m" name="m">'.$monthOptions.'</select>
-                            <label for="y">År: </label>
-                            <select id="y" name="y">'.$yearOptions.'</select>
-                        </div>
-                        <div>
-                            <label for="O"><strong>Plats 1:</strong></label></br>
-                            <input type="text" id="O" name="O" autocomplete="off" size="20" value="'.$this->getOrigin().'">
-                        </div>
-                        <div>
-                            <label for="Z"<strong>Plats 2:</strong></label></br>
-                            <input type="text" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
-                        </div>
-                        <div>
-                            <br>
-                            <input type="submit" id="submit" name="s1" value="Hämta prognos">
-                        </div>
-                    </form>
+                    <div class="page-header">
+                        <h1 class="text-center">Väder jämförelse</h1>
+                    </div>
+                    <div class="well">
+                        '.$alertBox.'
+                        <form class="form-horizontal" method="post">
+                            <div class="form-group">
+                                <label for="theDate" class="col-sm-2 control-label">Datum: </label>
+                                <div class="col-sm-10">
+                                    <input type="date" id="theDate" name="theDate">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="hour" class="col-sm-2 control-label">Tid: </label>
+                                <div class="col-sm-10">
+                                    <select id="hour" name="hour">'.$hours.'</select><strong> : </strong><select id="minute" name="minute">'.$minutes.'</select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="O" class="col-sm-2 control-label">Plats 1:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="O" name="O" autocomplete="off" size="20" value="'.$this->getOrigin().'">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="Z" class="col-sm-2 control-label">Plats 2:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <input class="btn btn-primary" type="submit" id="submit" name="s1" value="Hämta prognos">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             ';
     }
@@ -277,25 +258,34 @@ class TravelForecastView
         $oF = $this->model->getOriginForecast();
         $dF = $this->model->getDestinationForecast();
 
-        // Missing the part of time, opted to not include it because of the lack of traint-times which results in no way of establishing arrival time
         return '
         <div id="forecasts-container">
-            <div class="forecast">
-                <h3>Vädret i '.$oL->toponymName.' <span class="weather-coordinates">(Lat: '.$oL->lat.', Lng: '.$oL->lng.')</span></h3>
-                <div>'.$this->getDateTime().'</div>
-                <div>Beskrivning: '.$oF->description.'</div>
+            <div class="forecast well text-center">
+                <h3>Vädret i '.$oL->toponymName.'</h3>
+                <p>
+                    Lat: '.$oL->lat.', Lng: '.$oL->lng.'
+                </p>
+                <p>
+                    '.$this->getDateTime().'
+                </p>
                 <div class="weather-symbol">
-                    <img alt="weather description image" src="/project/src/Content/images/'.$oF->icon.'.png" />
+                    <img src="/project/src/Content/images/'.$oF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
                 </div>
+                <div>'.ucfirst($oF->description).'</div><br>
                 <div class="weather-temperature">'.$oF->temperature.' &#8451;</div>
             </div>
-            <div class="forecast">
-                <h3>Vädret i '.$dL->toponymName.' <span class="weather-coordinates">(Lat: '.$dL->lat.', Lng: '.$dL->lng.')</span></h3>
-                <div>'.$this->getDateTime().'</div>
-                <div>Beskrivning: '.$dF->description.'</div>
+            <div class="forecast well text-center">
+                <h3>Vädret i '.$dL->toponymName.'</h3>
+                <p>
+                    Lat: '.$dL->lat.', Lng: '.$dL->lng.'
+                </p>
+                <p>
+                    '.$this->getDateTime().'
+                </p>
                 <div class="weather-symbol">
-                    <img alt="weather description image" src="/project/src/Content/images/'.$dF->icon.'.png" />
+                    <img src="/project/src/Content/images/'.$dF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
                 </div>
+                <div>'.ucfirst($dF->description).'</div><br>
                 <div class="weather-temperature">'.$dF->temperature.' &#8451;</div>
             </div>
         </div>
@@ -321,16 +311,6 @@ class TravelForecastView
     private function validateTime()
     {
         return is_numeric($this->getHours()) && is_numeric($this->getMinutes());
-    }
-
-    /**
-     * Checks if the date from user input can be parsed as a "date"
-     *
-     * @return bool
-     */
-    private function validateDate()
-    {
-        return checkdate($this->getMonth(), $this->getDay(), $this->getYear());
     }
 
     /**
@@ -363,9 +343,7 @@ class TravelForecastView
      *
      * @return string
      */
-    private function getDay()               { return isset($_POST['d'])  ? trim($_POST['d'])  : ""; }
-    private function getMonth()             { return isset($_POST['m'])  ? trim($_POST['m'])  : ""; }
-    private function getYear()              { return isset($_POST['y'])  ? trim($_POST['y'])  : ""; }
+    private function getDate()              { return isset($_POST['theDate']) ? $_POST['theDate']  : ""; }
     private function getHours()             { return isset($_POST['hour']) ? trim($_POST['hour']) : ""; }
     private function getMinutes()           { return isset($_POST['minute']) ? trim($_POST['minute']) : ""; }
 }

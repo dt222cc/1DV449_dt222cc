@@ -12,8 +12,8 @@ class LayoutView
 <!DOCTYPE html>
 <html lang="sv">
     <head>
-        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8 ">
-        <meta name="viewport" content="width=device-width" initial-scale="1.0">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Väder jämnförelse</title>
         <link rel="stylesheet" href="Content/bootstrap.min.css" />
         <link rel="stylesheet" href="Content/site.css" />
