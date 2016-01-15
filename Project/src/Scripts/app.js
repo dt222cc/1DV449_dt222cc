@@ -12,16 +12,27 @@ var app = {
     {
         var date = new Date();
 
+        // Get current date, pre fill and the minimum date
         var day = date.getDate();
         var month = date.getMonth() + 1;
         var year = date.getFullYear();
-
         if (month < 10) month = "0" + month;
         if (day < 10) day = "0" + day;
 
+        // Add 5 days, to set the max date
+        date.setDate(day + 4);
+        var day2 = date.getDate();
+        var month2 = date.getMonth() + 1;
+        var year2 = date.getFullYear();
+        if (month2 < 10) month2 = "0" + month2;
+        if (day2 < 10) day2 = "0" + day2;
+
         var today = year + "-" + month + "-" + day;
+        var maxDate = year2 + "-" + month2 + "-" + day2;
+
         $("#theDate").attr("value", today);
         $("#theDate").attr("min", today);
+        $("#theDate").attr("max", maxDate);
     },
 
     sendLocalStorageToServerEvent: function()
