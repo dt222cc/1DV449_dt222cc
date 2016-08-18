@@ -216,9 +216,6 @@ class TravelForecastView
                 <div id="location-container">
                     <div class="page-header">
                         <h1 class="text-center">Weather Comparison</h1>
-                        <p>* UTF8 Support not completely finished/solved.</p>
-                        <p>* Because of the new of offline support, a few error messages does not work like empty input fields.</p>
-                        <p>* Have not converted the error messages from swedish to english yet :D</p>
                     </div>
                     <div class="well">
                         ' . $alertBox . '
