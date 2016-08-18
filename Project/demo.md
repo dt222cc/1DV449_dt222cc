@@ -19,6 +19,7 @@ Datum och tid måste vara mellan dagens datum och fem dagar frammåt, pga OpenWe
 
 De två text fälterna har validering, tomma fälter och ej speciella tecken.
 </pre>
+
 ***
 En lyckad resultat kan se ut så här:
 
@@ -27,6 +28,7 @@ En lyckad resultat kan se ut så här:
 <pre>
 Notera att den angivna tiden konverteras till tre timmars prognos i samband med formatteringen.
 </pre>
+
 ***
 Om en sökning lyckades inte att hämta plats eller prognos från respektiv API, så ska det presenteras lite röd text för användaren.
 

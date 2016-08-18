@@ -5,53 +5,52 @@
 - [Kurshemsida](https://coursepress.lnu.se/kurs/webbteknik-ii/projektbeskrivning/)
 
 #Inledning
-Jag hade först planerat att skapa ett reseplanerare med väder prognoser, för till och från platserna. Det visade sig att det skulle ta mer tid än vad jag hade. Resultatet blev då ett väderprognos jämnförare, typ eller vad man nu ska kalla det. Användaren matar in två platser och tidfället. Prognoser för de två platserna under angivet tidfälle presenteras för användaren. Jag har inte precis hunnit kolla upp om det finns liknander applikationer, finns förmodligen det.
+Jag hade först planerat att skapa ett reseplanerare med väder prognoser (som ett plugin/tillägg som använder information från resan), för från och till platserna. Det visade sig att det skulle ta mer tid än vad jag hade, var för ambitiös. Ändringen jag gjorde var fortsätta med väderprognosen vilket ledde till en applikation som jämnförar två platsers väderprognos vid en angiven tidsfälle. Jag har inte precis hunnit kolla upp om det finns liknander applikationer, finns förmodligen det. Det finns en hel del förbättringar att göra tycker jag, t.ex mer funktionalitet/presentation.
 
+#Användning
+Användaren matar in två platser och tidfället. Prognoser för de två platserna under angivet tidfälle presenteras för användaren.
+
+#Tekniker
 De tekniker som jag använde och stötte på under projektets gång var då:
-- PHP och JavaScript som programmerings språk (Mest PHP)
-- jQuery: AJAX och lite DOM.
+- PHP och JavaScript som programmerings språk
+- jQuery för lite AJAX och DOM.
 - MySQL för persistent förvaring av sökresultat (platser och prognoser).
 - Cache: HTML5 Local Storage.
+- Offline: navigator.onLine, service worker
 
 Api:er
-- Api Geonames: Hämta koordinater efter namn (plats name).
-- Api OpenWeatherMap: Hämta prognoser efter koordinater.
+- Geonames: Hämta koordinater efter plats namnet.
+- OpenWeatherMap: För att hämta prognoser efter koordinater, ville testa en annan väder API istället för yr.no.
 
 #Design/Schema
 - [Service/MasterController - Klassdiagram](raw/mastercontroller-design.png)
 - [Index+view Klassdiagram](raw/presentation-design.png)
 
-
 #Cache lösning
-Jag kör emot local storage om webbläsaren har stöd för det och en mysql databas med två tabeller. Det fungerar så att om webbläsaren har stöd för local storage och det finns sparade resultat där så kollar applikationen av om platsen/plateserna eller om prognosen finns där i cachen. Om det finns så körs ingenting emot databas eller API. Om det inte finns så görs ett kontroll i databasen och om den inte finns där så hämtar vi resultat från API, sedan sparas nya resultat i databas och cachen. Det finns optimeringar att göra för cachningen, stoppa in flera platser (kanske i bakgrunden, eller om användaren "vill" göra det så kan en knapp läggas till).
-
-Exempel av flöde:
-<pre>
-- Plats1 = cache? ja, fortsätt
-- Plats2 = cache? nej > databas? ja, fortsätt
-- Prognos1 = cache? nej > databas? nej > webservice? ja, fortsätt
-- Prognos2 = cache? nej > databas? nej > webservice? nej, exception > felmeddelande, slut
-</pre>
-
-<pre>
-- Plats1 = cache? ja, fortsätt
-- Plats2 = cache? nej > databas? ja, fortsätt
-- Prognos1 = cache? nej > databas? ja, fortsätt
-- Prognos2 = cache? nej > databas? nej > webservice? ja > spara till databas, fortsätt
-- Spara till cache (enbart nya resultat, som plats2 och prognos1/2).
-</pre>
+Jag kör emot local storage om webbläsaren har stöd för det och har en mysql databas med två tabeller (platser & prognoser). Det fungerar så att om webbläsaren har stöd för local storage så kollar applikationen av om prognosen för platsen finns där i cachen. Om det finns i localStorage så körs ingenting emot databas eller API. Om prognosen inte fanns i cachen så görs ett kontroll i databasen om prognosen finns där och om den inte finns där heller, så hämtas prognosen ifrån API:et, därefter sparas de nya platser/prognoser i databasen och cachen(localstorage).
 
 #Säkerhet och prestandaoptimering
-Jag validerar indata från användaren. För databas så såg jag till att jag för skyddad mot sql-incetion. Jag har inte precis validerat data från de två api:er, jag hade inte precis koll på hur jag skulle få ihop det + ont om tid. Använder inte cookies, så jag skippar den säkerhetsdelen. Ej någon form av inloggning, så ej OAuth. Är kanske öppen mot CSRF attacker. För prestanda så har vi cachning, CSS där uppe, JavaScript där nere. Valde att inte minifiera js, tycker inte att det var värt det för just denna projekt. Hade inte så mycket javascript.
+Jag validerar indata från användaren. Jag har skydd emot sql-injection för databas. Jag har inte precis validerat data från de två api:er som jag använder vilket innebär en risk, hade inte precis koll på den typ av validering. Jag kör inte med cookies och har heller ingen form av inloggning/authentisiering. Applikationen är för tillfället öppen för CSRF attacker.
+
+För prestanda så har vi cachning av tidigare sökningar, CSS är placerade i filer och i HEAD-taggen för att tillåta en progressiv rendering av sidan samt att JavaScript placerat i filer och precis innan BODY-taggens slut. Jag minifierade inte mitt javascript, tyckte inte att det var värt det för just denna applikationen, hade inte precis så mycket javascript.
+
+På grund av att jag valde att inte bearbetar alldeles för mycket data från prognoserna (liksom spara undan flera prognoser ifrån api:et till databas och cache), för att snabba till responsen, ledde det till en sämre offline-användelse på grund av begränsningen av sökningar man kan göra.
 
 #Offline-first
-Jag saknar implementation av offline, jag hann inte med det. Applikationen skulle kunna fungera i offline i teori, det handlar om att man skulle kunna göra sökningar på platser som man hade tidigare hade gjort, om webbläsaren har stöd för local storage då och att informationen är kvar.
+Vid första inlämning saknade jag implementation av offline så jag fick komplettera. Denna typ av applikationen skulle funka för offline bruk till en viss grad, det handlar om att man ska spara undan resultat från då man var online i cachen, så att man kan göra sökningar på platser och tid som omfattas av tidsperioden när man är offline. Min cache lösning ser till att man kan spara undan resultat på sökningar som man hade tidigare gjort och ej prognoser för t.ex resten av dagen.
+
+Offline stödet som jag har är med hjälp av att lyssna på 'navigator.offline' så har jag händelser som rapporterar till användaren om användarens anslutning går ner, när användaren är "offline" så blir applikationens funktionalitet även begränsad så att man kan endast göra sökningar som finns kvar i cachen. Användaren får ett meddelande om det inte gick att hämta prognoser för båda platserna. Jag försökte utöka offline stödet så att man kan backa eller ladda om sidan utan att stöta på problem, fick inte det att funka.
+
+Det tekniska delen för offline stödet finns i JavaScripten, där jag i princip använder `localstorage`, `navigator.onLine`, `e.preventDefault()` och DOM.
 
 #Risker
 Ingen validering av data från de olika api:er. Ej någon typ av SSL-certifikat, vilket gör att jag inte kan köra min applikation över https. Det kanske finns en risk för överbelastning, har inte precis koll på hur jag kollar det. Det kan bli en väldig många request mot api om användaren gör flera olika anrop mot olika dagar och platser hela tiden då jag tar emot alla prognoser för den valda dagen. Skulle kanske vara en bättre ide att ta flera prognoser över flera dagar, isåfall skulle det kanske ta med tid vid varje "ny" förfrågan.
 
-#Reflektioner
-Jag började med den andra projektet i 1dv409. När jag började med denna projekt så märkte jag av tidigt att jag behövde tänka om omfattningen (minus trafik delen). Sedan så stötte jag på problem angående cachning. Tänkte först köra med fil cachning vid servern men läste att det fungerar inte så bra för min typ av cachning, json och dynamisk uppdatering av cachen (lägga till nya sökresultat). Sedan så tog det tid att klura ut hur jag skulle koordinera mellan klientets local storage med PHP, där jag har databas och webbapi hantering. Strul med webbhotellet. Jag hann ju inte med offline delen, "kanske" fortsätta med den delen om jag måste men skulle helst inte vilja göra det :) Jag skulle ha velat att pyssla med designen mer, göra den mer responsiv, som du/ni ser så har jag faktist inte lagt ned någon tid åt css, liksom det fungerar.
-
 #Extra
-Tid för kommentering skulle ha kunnats lägga på implementation av offline istället. Tycker dock att kommentering är skönt att ha, samlar mina tankar bättre. Tycker att kod kvalitén är ok, man har förmodligen inte några större svårigheter med att förstå hur appliaktionen fungerar.
+Tid för kommentering skulle ha kunnats lägga på implementation av offline istället. Tycker dock att kommentering är skönt att ha, samlar mina tankar bättre. Tycker att kod kvalitén är ok.
+
+#Övrigt
+En del av namngivning är fortfarande vid reseplanerare projektet och har inte precis uppdaterats till väder prognos jämföraren. Stötte på problem med UTF-8.
+
+#Reflektioner
+Jag började med den andra projektet, 1dv409, först. När jag började köra igång med denna projekt så märkte jag av tidigt att jag behövde tänka om omfattningen av applikationen, minus trafik delen. Jag stötte på problem med cachning, tänkte först köra med fil cachning vid servern men läste att det fungerar inte så bra för min typ av cachning med json och dynamisk uppdatering av cachen, vid nya sökresultat. Det tog en del tid att klura ut hur jag skulle koordinera mellan klientets local storage med PHP, där jag har databas och webbapi hantering. Hade en bit strul med webbhotell. Jag skulle ha velat att pyssla med designen mer, göra den mer responsiv, som du/ni ser så har jag faktist inte lagt ned någon tid åt css, det fungerar.

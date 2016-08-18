@@ -22,7 +22,6 @@ class LocationDAL
             }
         }
         $conn->close();
-
         return $location;
     }
 
@@ -57,6 +56,7 @@ class LocationDAL
             printf("Connect failed: %s\n", $conn->connect_error);
             exit();
         }
+        $conn->set_charset("utf8");
         return $conn;
     }
 }

@@ -1,9 +1,11 @@
 <?php
 
+/**
+ * There is opimization and refactoring to be done, for example less code here and more JavaScript, naming
+ */
 class TravelForecastView
 {
-    private $message = "";
-    private $serviceErrorMessage = "";
+    private $errorMessage = "";
 
     /**
      * @var /View/TravelForecastModel
@@ -31,7 +33,7 @@ class TravelForecastView
      */
     public function setCacheData($locations, $forecasts)
     {
-        $this->cacheLocations = json_encode($locations) ? json_encode($locations) : "damnåäö";
+        $this->cacheLocations = json_encode($locations) ? json_encode($locations) : "damnåäö"; //app.js
         $this->cacheForecasts = json_encode($forecasts) ? json_encode($forecasts) : "damnåäö";
     }
 
@@ -41,14 +43,15 @@ class TravelForecastView
 
         switch ($case){
             case 0:
-                $message = "Ett oväntat fel uppstod, försök igen senare eller ett nytt försök.";
+                $message = "An unexpected error occured, try again another time or with different data.";
                 break;
             case 1:
-                $message = "Webbtjänsten kunde inte hitta plats eller prognos, kontrollera uppgifterna igen eller försök igen senare (webbtjänst kan vara nere).";
+                $message = "The webservice could not find the place or forecast for the given time." +
+                " Check the details again, try with another time/date or come back another time.";
                 break;
         }
 
-        $this->serviceErrorMessage = $message;
+        $this->errorMessage .= $message;
     }
     /**
      * Accessor method, form submission
@@ -113,20 +116,23 @@ class TravelForecastView
     }
 
     /**
-     * Form validation, departure & arrival
+     * Form validation, departure & arrival.
+     * Note: Could/should perhaps handle error messages felmeddelandet in the client and work with exceptions here
      *
      * @return string HTML
      */
     public function validateFields()
     {
-        $this->message = "";
+        $message = ""; // Temp variable, using $this->errorMessage instead of $message results in duplicated entries.
 
-        if ($this->getOrigin() == "")                   { $this->message .= "Fältet för avgångsplats saknas<br>"; }
-        if ($this->getDestination() == "")              { $this->message .= "Fältet för ankomstplats saknas<br>"; }
-        if ($this->validateTime() == false)             { $this->message .= "Fel format för tid<br>"; }
-        if ($this->containsSpecialCharacters() == true) { $this->message .= "Fält innehåller ogiltiga tecken<br>"; }
+        if ($this->getOrigin() == "")                   { $message .= "Input field for the first location is missing<br>"; }
+        if ($this->getDestination() == "")              { $message .= "Input field for the second location is missing<br>"; }
+        if ($this->validateTime() == false)             { $message .= "Wrong format on time<br>"; }
+        if ($this->containsSpecialCharacters() == true) { $message .= "Field contains some invalid characters<br>"; }
 
-        return $this->message == "";
+        $this->errorMessage = $message;
+
+        return $this->errorMessage == "";
     }
 
     /**
@@ -141,16 +147,18 @@ class TravelForecastView
         // In progress, If user did a submission, validation and stuff
         if ($this->didUserSubmitForm()) {
             $re = $this->validateFields();
+
             // Fields must be validated before getting the travel html (error messages: $this->message)
             $html .=  $this->getTravelHTML();
+
             if ($re == true) { // If validation passed, add more parts (WIP!)
-                if ($this->model->getOriginLocation() !== null && $this->model->getDestinationLocation() !== null &&
-                    $this->model->getDestinationForecast() !== null && $this->model->getOriginForecast() !== null)
+                if ($this->model->getOriginLocation() !== null &&
+                    $this->model->getDestinationLocation() !== null &&
+                    $this->model->getDestinationForecast() !== null &&
+                    $this->model->getOriginForecast() !== null)
                 {
                     $html .= $this->getForecastHTML();
                     $html .= $this->addHiddenFieldForCache();
-                } else {
-                    // $html .= $this->getErrorMessages();
                 }
             }
         }
@@ -170,78 +178,85 @@ class TravelForecastView
      */
     private function getTravelHTML()
     {
-        // Options for hour selection
         $hours = "";
+        $minutes = "";
+        $alertBox = "";
+
+        // Options for hour selection
         for ($i = 0; $i < 24; $i++) {
-            $j = sprintf("%02d", $i); // Add a \0 if not two characters long: 0 > 00, 1 > 01, 10 still 10
+            $twoDigit = sprintf("%02d", $i); // Add a \0 if not two characters long: 0 > 00, 1 > 01, 10 still 10
             // If current hour, make "selected"
             if ($i === intval(date('G'))) {
-                $hours .= '<option value="'.$i.'" selected="">'.$j.'</option>';
-            }
-            else {
-                $hours .= '<option value="'.$i.'">'.$j.'</option>';
+                $hours .= '<option value="' . $i . '" selected="">' . $twoDigit . '</option>';
+            } else {
+                $hours .= '<option value="' . $i . '">' . $twoDigit . '</option>';
             }
         }
 
         // Options for minutes selection, should be between 0 and 59
-        $minutes = "";
         for ($i = 0; $i < 60; $i++) {
-            $j = sprintf("%02d", $i);
+            $twoDigit = sprintf("%02d", $i);
             // If same as current minute, make "selected"
-            if ($j === date('i')) {
-                $minutes .= '<option value="'.$i.'" selected="">'.$j.'</option>';
+            if ($twoDigit === date('i')) {
+                $minutes .= '<option value="' . $i . '" selected="">' . $twoDigit . '</option>';
             } else {
-                $minutes .= '<option value="'.$i.'">'.$j.'</option>';
+                $minutes .= '<option value="' . $i . '">' . $twoDigit . '</option>';
             }
         }
 
-        $alertBox = "";
-        if ($this->message !== "" || $this->serviceErrorMessage !== "") {
+        // Could be broken..
+        if ($this->errorMessage !== "") {
             $alertBox .= '
                 <div class="alert alert-danger" role="alert">
-                    '.$this->message.$this->serviceErrorMessage.'
+                    ' . $this->errorMessage . '
                 </div>';
         }
 
         return '
                 <div id="location-container">
                     <div class="page-header">
-                        <h1 class="text-center">Väder jämförelse</h1>
+                        <h1 class="text-center">Weather Comparison</h1>
+                        <p>* UTF8 Support not completely finished/solved.</p>
+                        <p>* Because of the new of offline support, a few error messages does not work like empty input fields.</p>
+                        <p>* Have not converted the error messages from swedish to english yet :D</p>
                     </div>
                     <div class="well">
-                        '.$alertBox.'
-                        <form class="form-horizontal" method="post">
+                        ' . $alertBox . '
+                        <form name="weatherForm" id="weatherForm" class="form-horizontal" method="post">
                             <div class="form-group">
-                                <label for="theDate" class="col-sm-2 control-label">Datum: </label>
+                                <label for="theDate" class="col-sm-2 control-label">Date: </label>
                                 <div class="col-sm-10">
                                     <input type="date" id="theDate" name="theDate">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="hour" class="col-sm-2 control-label">Tid: </label>
+                                <label for="hour" class="col-sm-2 control-label">Time: </label>
                                 <div class="col-sm-10">
-                                    <select id="hour" name="hour">'.$hours.'</select><strong> : </strong><select id="minute" name="minute">'.$minutes.'</select>
+                                    <select id="hour" name="hour">' . $hours . '</select><strong> : </strong><select id="minute" name="minute">' . $minutes . '</select>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="O" class="col-sm-2 control-label">Plats 1:</label>
+                                <label for="O" class="col-sm-2 control-label">Location 1:</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="O" name="O" autocomplete="off" size="20" value="'.$this->getOrigin().'">
+                                    <input type="text" class="form-control" id="O" name="O" autocomplete="off" size="20" value="' . $this->getOrigin() . '">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="Z" class="col-sm-2 control-label">Plats 2:</label>
+                                <label for="Z" class="col-sm-2 control-label">Location 2:</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="Z" name="Z" autocomplete="off" size="20" value="'.$this->getDestination().'">
+                                    <input type="text" class="form-control" id="Z" name="Z" autocomplete="off" size="20" value="' . $this->getDestination() . '">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-offset-2 col-sm-10">
-                                    <input class="btn btn-primary" type="submit" id="submit" name="s1" value="Hämta prognos">
+                                    <input class="btn btn-primary" type="submit" id="submit" name="s1" value="Get forecast">
                                 </div>
                             </div>
                         </form>
                     </div>
+                </div>
+                <div id="offline-div" class="alert-danger" hidden>
+                    <p>You are offline! Limited functionality, only able to do stored searches.</p>
                 </div>
             ';
     }
@@ -260,33 +275,27 @@ class TravelForecastView
 
         return '
         <div id="forecasts-container">
-            <div class="forecast well text-center">
-                <h3>Vädret i '.$oL->toponymName.'</h3>
+            <div class="forecast">
+                <h3>' . $oL->toponymName . '<small>(' . $oL->lat . ', ' . $oL->lng . ')</small></h3>
                 <p>
-                    Lat: '.$oL->lat.', Lng: '.$oL->lng.'
-                </p>
-                <p>
-                    '.$this->getDateTime().'
+                    ' . $this->getDateTime() . '
                 </p>
                 <div class="weather-symbol">
-                    <img src="Content/images/'.$oF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
+                    <img src="Content/images/' . $oF->icon . '.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
                 </div>
-                <div>'.ucfirst($oF->description).'</div><br>
-                <div class="weather-temperature">'.$oF->temperature.' &#8451;</div>
+                <div>' . ucfirst($oF->description) . '</div><br>
+                <div class="weather-temperature">' . $oF->temperature . ' &#8451;</div>
             </div>
-            <div class="forecast well text-center">
-                <h3>Vädret i '.$dL->toponymName.'</h3>
+            <div class="forecast">
+                <h3>' . $dL->toponymName . '<small>(' . $dL->lat . ', ' . $dL->lng . ')</small></h3>
                 <p>
-                    Lat: '.$dL->lat.', Lng: '.$dL->lng.'
-                </p>
-                <p>
-                    '.$this->getDateTime().'
+                    ' . $this->getDateTime() . '
                 </p>
                 <div class="weather-symbol">
-                    <img src="Content/images/'.$dF->icon.'.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
+                    <img src="Content/images/' . $dF->icon . '.png" alt="weather description image" class="img-thumbnail img-responsive" width="100"/>
                 </div>
-                <div>'.ucfirst($dF->description).'</div><br>
-                <div class="weather-temperature">'.$dF->temperature.' &#8451;</div>
+                <div>' . ucfirst($dF->description) . '</div><br>
+                <div class="weather-temperature">' . $dF->temperature . ' &#8451;</div>
             </div>
         </div>
         ';
@@ -297,10 +306,10 @@ class TravelForecastView
      */
     private function addHiddenFieldForCache()
     {
-        return "
-            <div hidden id=\"temp-locations\">$this->cacheLocations</div>
-            <div hidden id=\"temp-forecasts\">$this->cacheForecasts</div>
-        ";
+        return '
+            <div hidden id="temp-locations">' . $this->cacheLocations . '</div>
+            <div hidden id="temp-forecasts">' . $this->cacheForecasts . '</div>
+        ';
     }
 
     /**
@@ -321,7 +330,8 @@ class TravelForecastView
     private function containsSpecialCharacters()
     {
         if ($this->removeSomeSpecialCharacters($_POST['O']) != $_POST['O'] ||
-            $this->removeSomeSpecialCharacters($_POST['Z']) != $_POST['Z']) {
+            $this->removeSomeSpecialCharacters($_POST['Z']) != $_POST['Z'])
+        {
             return true;
         }
         return false;
@@ -343,7 +353,7 @@ class TravelForecastView
      *
      * @return string
      */
-    private function getDate()              { return isset($_POST['theDate']) ? $_POST['theDate']  : ""; }
-    private function getHours()             { return isset($_POST['hour']) ? trim($_POST['hour']) : ""; }
-    private function getMinutes()           { return isset($_POST['minute']) ? trim($_POST['minute']) : ""; }
+    private function getDate()    { return isset($_POST['theDate']) ? $_POST['theDate']      : ""; }
+    private function getHours()   { return isset($_POST['hour'])    ? trim($_POST['hour'])   : ""; }
+    private function getMinutes() { return isset($_POST['minute'])  ? trim($_POST['minute']) : ""; }
 }

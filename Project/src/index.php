@@ -11,6 +11,9 @@ require_once("Controllers/MasterController.php");
 // Just a quick solution to get on timezone to match and get rid of the warning message
 date_default_timezone_set("Europe/Stockholm");
 
+// TEST: CHARSET=UTF-8
+header('Content-Type: text/html; charset=utf-8');
+
 // DISPLAY ERROR MESSAGES, DO DISABLE ON PUBLIC SERVER IF "READY"...
 error_reporting(E_ALL);
 ini_set('display_errors', 'ON');

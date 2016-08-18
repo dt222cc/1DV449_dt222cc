@@ -10,17 +10,25 @@ class MasterController
     private $view;
 
     /**
-     * MasterController constructor.
+     * MasterController constructor. Dependency injection.
      * @param TravelForecastModel $model
      * @param TravelForecastView $view
      */
     public function __construct(TravelForecastModel $model, TravelForecastView $view)
     {
         // Prep session variables to pass variables between PHP and JavaScript
-        if ($_SESSION["locations"] === null) {
+        if ($_SESSION["locations"]) {
+            if ($_SESSION["locations"] === null) {
+                $_SESSION["locations"] = "";
+            }
+        } else {
             $_SESSION["locations"] = "";
         }
-        if ($_SESSION["forecasts"] === null) {
+        if ($_SESSION["forecasts"]) {
+            if ($_SESSION["forecasts"] === null) {
+                $_SESSION["forecasts"] = "";
+            }
+        } else {
             $_SESSION["forecasts"] = "";
         }
 
@@ -29,7 +37,7 @@ class MasterController
     }
 
     /**
-     * Handle the flow of the service, decide between cache and database/webservice
+     * Handles the flow of the service, cache>database>api. Save to cache if database or api.
      */
     public function doTravelForecastService()
     {
@@ -43,8 +51,8 @@ class MasterController
 
             try {
                 // Get location names
-                $dLocationName = $this->view->getDestination();
                 $oLocationName = $this->view->getOrigin();
+                $dLocationName = $this->view->getDestination();
                 // If locations from cache is available
                 if ($cacheLocations !== "" && $cacheLocations !== null) {
                     // 1.1 Cache
@@ -113,7 +121,7 @@ class MasterController
      */
     private function getLocationFromCache($targetLocation, $locations)
     {
-        foreach($locations as $location){
+        foreach ($locations as $location) {
             if ($location->name === $targetLocation) {
                 return $location;
             }
@@ -152,18 +160,23 @@ class MasterController
     private function saveCache($oLocation, $dLocation, $oForecast, $dForecast, $cacheLocations, $cacheForecasts)
     {
         // Add by default, changes to false if already exists
-        $addOL =  $addDL =  $addOF =  $addDF = true;
+        $addOL = true;
+        $addDL = true;
+        $addOF = true;
+        $addDF = true;
 
-        if ($cacheLocations !== null && $cacheLocations !== "") {
+        if ($cacheLocations === null || $cacheLocations === "") {
+            $cacheLocations = array();
+        } else {
             foreach($cacheLocations as $location) {
                 if ($location->name === $oLocation->name) { $addOL = false; }
                 if ($location->name === $dLocation->name) { $addDL = false; }
             }
-        } else {
-            $cacheLocations = array();
         }
 
-        if ($cacheForecasts !== null && $cacheForecasts !== "") {
+        if ($cacheForecasts === null || $cacheForecasts === "") {
+            $cacheForecasts = array();
+        } else {
             foreach($cacheForecasts as $forecast) {
                 if ($forecast->locationName === $oForecast->locationName &&
                     $forecast->forecastTime === $oForecast->forecastTime)
@@ -176,8 +189,6 @@ class MasterController
                     $addDF = false;
                 }
             }
-        } else {
-            $cacheForecasts = array();
         }
 
         if ($addOL) { $cacheLocations[] = $oLocation; }
@@ -186,7 +197,5 @@ class MasterController
         if ($addDF) { $cacheForecasts[] = $dForecast; }
 
         $this->view->setCacheData($cacheLocations, $cacheForecasts);
-
-        // Copy paste for the win.. and some stuff to make it more compact
     }
 }
